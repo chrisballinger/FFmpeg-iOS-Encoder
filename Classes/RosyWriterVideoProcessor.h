@@ -64,8 +64,8 @@
 	AVCaptureConnection *videoConnection;
 	CMBufferQueueRef previewBufferQueue;
 	
-	NSURL *movieURL;
 	AVAssetWriter *assetWriter;
+    AVAssetWriter *assetWriter2;
 	AVAssetWriterInput *assetWriterAudioIn;
 	AVAssetWriterInput *assetWriterVideoIn;
 	dispatch_queue_t movieWritingQueue;
@@ -87,6 +87,7 @@
 @property (readonly) Float64 videoFrameRate;
 @property (readonly) CMVideoDimensions videoDimensions;
 @property (readonly) CMVideoCodecType videoType;
+@property (nonatomic, retain) NSURL *movieURL;
 
 @property (readwrite) AVCaptureVideoOrientation referenceOrientation;
 

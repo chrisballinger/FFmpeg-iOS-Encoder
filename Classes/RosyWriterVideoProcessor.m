@@ -71,16 +71,14 @@
 @synthesize referenceOrientation;
 @synthesize videoOrientation;
 @synthesize recording;
+@synthesize movieURL;
 
 - (id) init
 {
     if (self = [super init]) {
         previousSecondTimestamps = [[NSMutableArray alloc] init];
         referenceOrientation = UIDeviceOrientationPortrait;
-        
-        // The temporary path for the video before saving it to the photo album
-        movieURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@%@", NSTemporaryDirectory(), @"Movie.MOV"]];
-        [movieURL retain];
+        self.movieURL = [self newMovieURL];
     }
     return self;
 }
@@ -88,9 +86,18 @@
 - (void)dealloc 
 {
     [previousSecondTimestamps release];
-    [movieURL release];
+    self.movieURL = nil;
 
 	[super dealloc];
+}
+
+- (NSURL*) newMovieURL {
+    // The temporary path for the video before saving it to the photo album
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    NSString *movieName = [NSString stringWithFormat:@"%f.mp4",[[NSDate date] timeIntervalSince1970]];
+    NSURL *newMovieURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@", basePath, movieName]];
+    return newMovieURL;
 }
 
 #pragma mark Utilities
@@ -161,26 +168,6 @@
 }
 
 #pragma mark Recording
-
-- (void)saveMovieToCameraRoll
-{
-	ALAssetsLibrary *library = [[ALAssetsLibrary alloc] init];
-	[library writeVideoAtPathToSavedPhotosAlbum:movieURL
-								completionBlock:^(NSURL *assetURL, NSError *error) {
-									if (error)
-										[self showError:error];
-									else
-										[self removeFile:movieURL];
-									
-									dispatch_async(movieWritingQueue, ^{
-										recordingWillBeStopped = NO;
-										self.recording = NO;
-										
-										[self.delegate recordingDidStop];
-									});
-								}];
-	[library release];
-}
 
 - (void) writeSampleBuffer:(CMSampleBufferRef)sampleBuffer ofType:(NSString *)mediaType
 {
@@ -306,13 +293,10 @@
 
 		// recordingDidStart is called from captureOutput:didOutputSampleBuffer:fromConnection: once the asset writer is setup
 		[self.delegate recordingWillStart];
-
-		// Remove the file if one with the same name already exists
-		[self removeFile:movieURL];
 			
 		// Create an asset writer
 		NSError *error;
-		assetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeQuickTimeMovie error:&error];
+		assetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
 		if (error)
 			[self showError:error];
 	});	
@@ -339,7 +323,10 @@
 			readyToRecordVideo = NO;
 			readyToRecordAudio = NO;
 			
-			[self saveMovieToCameraRoll];
+            recordingWillBeStopped = NO;
+            self.recording = NO;
+            [self.delegate recordingDidStop];
+            self.movieURL = [self newMovieURL];
 		}
 		else {
 			[self showError:[assetWriter error]];
