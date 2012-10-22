@@ -387,10 +387,10 @@
 		if ( self.videoType == 0 )
 			self.videoType = CMFormatDescriptionGetMediaSubType( formatDescription );
 
-		CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+		//CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
 		
 		// Synchronously process the pixel buffer to de-green it.
-		[self processPixelBuffer:pixelBuffer];
+		//[self processPixelBuffer:pixelBuffer];
 		
 		// Enqueue it for preview.  This is a shallow queue, so if image processing is taking too long,
 		// we'll drop this frame for preview (this keeps preview latency low).
