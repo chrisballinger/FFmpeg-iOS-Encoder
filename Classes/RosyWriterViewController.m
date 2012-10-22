@@ -99,7 +99,7 @@ static inline double radians (double degrees) { return degrees * (M_PI / 180); }
 	[[label layer] setCornerRadius: 4];
 	[label setText:text];
 	
-	return [label autorelease];
+	return label;
 }
 
 - (void)applicationDidBecomeActive:(NSNotification*)notifcation
@@ -160,7 +160,6 @@ static inline double radians (double degrees) { return degrees * (M_PI / 180); }
 
 - (void)cleanup
 {
-	[oglView release];
 	oglView = nil;
     
     frameRateLabel = nil;
@@ -176,7 +175,6 @@ static inline double radians (double degrees) { return degrees * (M_PI / 180); }
     // Stop and tear down the capture session
 	[videoProcessor stopAndTearDownCaptureSession];
 	videoProcessor.delegate = nil;
-    [videoProcessor release];
 }
 
 - (void)viewDidUnload 
@@ -205,7 +203,6 @@ static inline double radians (double degrees) { return degrees * (M_PI / 180); }
 {
 	[self cleanup];
 
-	[super dealloc];
 }
 
 - (IBAction)toggleRecording:(id)sender 
@@ -256,7 +253,7 @@ static inline double radians (double degrees) { return degrees * (M_PI / 180); }
 		
 		// Pause the capture session so that saving will be as fast as possible.
 		// We resume the sesssion in recordingDidStop:
-		[videoProcessor pauseCaptureSession];
+		//[videoProcessor pauseCaptureSession];
 	});
 }
 

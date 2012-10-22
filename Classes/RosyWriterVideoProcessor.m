@@ -72,6 +72,7 @@
 @synthesize videoOrientation;
 @synthesize recording;
 @synthesize movieURL;
+@synthesize segmentationTimer;
 
 - (id) init
 {
@@ -83,13 +84,6 @@
     return self;
 }
 
-- (void)dealloc 
-{
-    [previousSecondTimestamps release];
-    self.movieURL = nil;
-
-	[super dealloc];
-}
 
 - (NSURL*) newMovieURL {
     // The temporary path for the video before saving it to the photo album
@@ -315,9 +309,6 @@
 		[self.delegate recordingWillStop];
 
 		if ([assetWriter finishWriting]) {
-			[assetWriterAudioIn release];
-			[assetWriterVideoIn release];
-			[assetWriter release];
 			assetWriter = nil;
 			
 			readyToRecordVideo = NO;
@@ -478,7 +469,6 @@
     AVCaptureDeviceInput *audioIn = [[AVCaptureDeviceInput alloc] initWithDevice:[self audioDevice] error:nil];
     if ([captureSession canAddInput:audioIn])
         [captureSession addInput:audioIn];
-	[audioIn release];
 	
 	AVCaptureAudioDataOutput *audioOut = [[AVCaptureAudioDataOutput alloc] init];
 	dispatch_queue_t audioCaptureQueue = dispatch_queue_create("Audio Capture Queue", DISPATCH_QUEUE_SERIAL);
@@ -487,7 +477,6 @@
 	if ([captureSession canAddOutput:audioOut])
 		[captureSession addOutput:audioOut];
 	audioConnection = [audioOut connectionWithMediaType:AVMediaTypeAudio];
-	[audioOut release];
     
 	/*
 	 * Create video connection
@@ -495,7 +484,6 @@
     AVCaptureDeviceInput *videoIn = [[AVCaptureDeviceInput alloc] initWithDevice:[self videoDeviceWithPosition:AVCaptureDevicePositionBack] error:nil];
     if ([captureSession canAddInput:videoIn])
         [captureSession addInput:videoIn];
-	[videoIn release];
     
 	AVCaptureVideoDataOutput *videoOut = [[AVCaptureVideoDataOutput alloc] init];
 	/*
@@ -513,7 +501,6 @@
 		[captureSession addOutput:videoOut];
 	videoConnection = [videoOut connectionWithMediaType:AVMediaTypeVideo];
 	self.videoOrientation = [videoConnection videoOrientation];
-	[videoOut release];
     
 	return YES;
 }
@@ -563,7 +550,6 @@
     [captureSession stopRunning];
 	if (captureSession)
 		[[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:captureSession];
-	[captureSession release];
 	captureSession = nil;
 	if (previewBufferQueue) {
 		CFRelease(previewBufferQueue);
@@ -586,7 +572,6 @@
                                                   cancelButtonTitle:@"OK"
                                                   otherButtonTitles:nil];
         [alertView show];
-        [alertView release];
     });
 }
 

@@ -54,8 +54,8 @@
     RosyWriterViewController *mainViewController;
 }
 
-@property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) IBOutlet RosyWriterViewController *mainViewController;
+@property (nonatomic, strong) IBOutlet UIWindow *window;
+@property (nonatomic, strong) IBOutlet RosyWriterViewController *mainViewController;
 
 @end
 

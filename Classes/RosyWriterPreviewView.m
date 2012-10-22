@@ -143,7 +143,6 @@ enum {
         oglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
         if (!oglContext || ![EAGLContext setCurrentContext:oglContext]) {
             NSLog(@"Problem with OpenGL context.");
-            [self release];
             
             return nil;
         }
@@ -300,7 +299,6 @@ enum {
         videoTextureCache = 0;
     }
     
-    [super dealloc];
 }
 
 @end

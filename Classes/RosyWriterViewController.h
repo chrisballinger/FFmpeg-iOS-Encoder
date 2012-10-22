@@ -67,8 +67,8 @@
 	UIBackgroundTaskIdentifier backgroundRecordingID;
 }
 
-@property (nonatomic, retain) IBOutlet UIView *previewView;
-@property (nonatomic, retain) IBOutlet UIBarButtonItem *recordButton;
+@property (nonatomic, strong) IBOutlet UIView *previewView;
+@property (nonatomic, strong) IBOutlet UIBarButtonItem *recordButton;
 
 - (IBAction)toggleRecording:(id)sender;
 

@@ -52,7 +52,7 @@
 
 @interface RosyWriterVideoProcessor : NSObject <AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate> 
 {  
-    id <RosyWriterVideoProcessorDelegate> delegate;
+    id <RosyWriterVideoProcessorDelegate> __weak delegate;
 	
 	NSMutableArray *previousSecondTimestamps;
 	Float64 videoFrameRate;
@@ -82,12 +82,13 @@
 	BOOL recording;
 }
 
-@property (readwrite, assign) id <RosyWriterVideoProcessorDelegate> delegate;
+@property (readwrite, weak) id <RosyWriterVideoProcessorDelegate> delegate;
 
 @property (readonly) Float64 videoFrameRate;
 @property (readonly) CMVideoDimensions videoDimensions;
 @property (readonly) CMVideoCodecType videoType;
-@property (nonatomic, retain) NSURL *movieURL;
+@property (nonatomic, strong) NSURL *movieURL;
+@property (nonatomic, strong) NSTimer *segmentationTimer;
 
 @property (readwrite) AVCaptureVideoOrientation referenceOrientation;
 
