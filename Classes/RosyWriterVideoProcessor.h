@@ -64,14 +64,18 @@
 	AVCaptureConnection *videoConnection;
 	CMBufferQueueRef previewBufferQueue;
 	
-	AVAssetWriter *assetWriter;
-    AVAssetWriter *assetWriter2;
+	AVAssetWriter *recordingAssetWriter;
+    AVAssetWriter *standbyAssetWriter;
 	AVAssetWriterInput *assetWriterAudioIn;
 	AVAssetWriterInput *assetWriterVideoIn;
 	dispatch_queue_t movieWritingQueue;
+    dispatch_queue_t segmentationQueue;
     
 	AVCaptureVideoOrientation referenceOrientation;
 	AVCaptureVideoOrientation videoOrientation;
+    
+    CMFormatDescriptionRef videoFormatDescription;
+    CMFormatDescriptionRef audioFormatDescription;
     
 	// Only accessed on movie writing queue
     BOOL readyToRecordAudio; 
@@ -89,6 +93,7 @@
 @property (readonly) CMVideoCodecType videoType;
 @property (nonatomic, strong) NSURL *movieURL;
 @property (nonatomic, strong) NSTimer *segmentationTimer;
+@property (nonatomic, strong) NSMutableArray *movieURLs;
 
 @property (readwrite) AVCaptureVideoOrientation referenceOrientation;
 

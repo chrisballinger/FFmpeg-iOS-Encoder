@@ -73,6 +73,7 @@
 @synthesize recording;
 @synthesize movieURL;
 @synthesize segmentationTimer;
+@synthesize movieURLs;
 
 - (id) init
 {
@@ -80,13 +81,15 @@
         previousSecondTimestamps = [[NSMutableArray alloc] init];
         referenceOrientation = UIDeviceOrientationPortrait;
         self.movieURL = [self newMovieURL];
+        self.movieURLs = [NSMutableArray array];
+        [movieURLs addObject:movieURL];
+        segmentationQueue = dispatch_queue_create("Segmentation Queue", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
 
 
 - (NSURL*) newMovieURL {
-    // The temporary path for the video before saving it to the photo album
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
     NSString *movieName = [NSString stringWithFormat:@"%f.mp4",[[NSDate date] timeIntervalSince1970]];
@@ -163,7 +166,7 @@
 
 #pragma mark Recording
 
-- (void) writeSampleBuffer:(CMSampleBufferRef)sampleBuffer ofType:(NSString *)mediaType
+- (void) writeSampleBuffer:(CMSampleBufferRef)sampleBuffer ofType:(NSString *)mediaType toAssetWriter:(AVAssetWriter*)assetWriter
 {
 	if ( assetWriter.status == AVAssetWriterStatusUnknown ) {
 		
@@ -194,12 +197,18 @@
 	}
 }
 
-- (BOOL) setupAssetWriterAudioInput:(CMFormatDescriptionRef)currentFormatDescription
+- (BOOL) setupAudioAssetWriter:(AVAssetWriter*)assetWriter audioInput:(CMFormatDescriptionRef)currentFormatDescription
 {
-	const AudioStreamBasicDescription *currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(currentFormatDescription);
+    audioFormatDescription = currentFormatDescription;
+    return [self setupAudioAssetWriter:assetWriter];
+}
+
+- (BOOL) setupAudioAssetWriter:(AVAssetWriter*)assetWriter
+{
+	const AudioStreamBasicDescription *currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(audioFormatDescription);
 
 	size_t aclSize = 0;
-	const AudioChannelLayout *currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(currentFormatDescription, &aclSize);
+	const AudioChannelLayout *currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(audioFormatDescription, &aclSize);
 	NSData *currentChannelLayoutData = nil;
 	
 	// AVChannelLayoutKey must be specified, but if we don't know any better give an empty data and let AVAssetWriter decide.
@@ -233,10 +242,16 @@
     return YES;
 }
 
-- (BOOL) setupAssetWriterVideoInput:(CMFormatDescriptionRef)currentFormatDescription 
+- (BOOL) setupVideoAssetWriter:(AVAssetWriter*)assetWriter videoInput:(CMFormatDescriptionRef)currentFormatDescription
+{
+    videoFormatDescription = currentFormatDescription;
+    return [self setupVideoAssetWriter:assetWriter];
+}
+
+- (BOOL) setupVideoAssetWriter:(AVAssetWriter*)assetWriter
 {
 	float bitsPerPixel;
-	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(currentFormatDescription);
+	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(videoFormatDescription);
 	int numPixels = dimensions.width * dimensions.height;
 	int bitsPerSecond;
 	
@@ -288,41 +303,89 @@
 		// recordingDidStart is called from captureOutput:didOutputSampleBuffer:fromConnection: once the asset writer is setup
 		[self.delegate recordingWillStart];
 			
-		// Create an asset writer
-		NSError *error;
-		assetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
-		if (error)
+        [self initializeAssetWriters];
+	});
+    if (self.segmentationTimer) {
+        [self.segmentationTimer invalidate];
+    }
+    self.segmentationTimer = [NSTimer scheduledTimerWithTimeInterval:5.0f target:self selector:@selector(segmentRecording:) userInfo:nil repeats:YES];
+}
+
+- (void) initializeAssetWriters {
+    // Create an asset writer
+    NSError *error;
+    recordingAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
+    if (error)
+        [self showError:error];
+    standbyAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
+    if (error)
+        [self showError:error];
+}
+
+- (void) segmentRecording:(NSTimer*)timer {
+    dispatch_async(segmentationQueue, ^{
+		
+		// recordingDidStop is called from saveMovieToCameraRoll
+		//[self.delegate recordingWillStop];
+        self.movieURL = [self newMovieURL];
+        [self.movieURLs addObject:movieURL];
+        
+        AVAssetWriter *currentlyRecordingAssetWriter = recordingAssetWriter;
+        // Create an asset writer
+        recordingAssetWriter = standbyAssetWriter;
+        readyToRecordVideo = NO;
+        readyToRecordAudio = NO;
+        
+        NSError *error;
+		AVAssetWriter *newAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
+        if (error)
 			[self showError:error];
-	});	
+        standbyAssetWriter = newAssetWriter;
+
+        if ([currentlyRecordingAssetWriter finishWriting]) {
+		}
+		else {
+			[self showError:[currentlyRecordingAssetWriter error]];
+		}
+
+	});
 }
 
 - (void) stopRecording
 {
 	dispatch_async(movieWritingQueue, ^{
-		
-		if ( recordingWillBeStopped || (self.recording == NO) )
+		AVAssetWriter *assetWriter = recordingAssetWriter;
+		if ( recordingWillBeStopped || (self.recording == NO) || !assetWriter)
 			return;
 		
 		recordingWillBeStopped = YES;
 		
 		// recordingDidStop is called from saveMovieToCameraRoll
 		[self.delegate recordingWillStop];
-
-		if ([assetWriter finishWriting]) {
-			assetWriter = nil;
-			
+        
+		if ([assetWriter finishWriting]) {			
 			readyToRecordVideo = NO;
 			readyToRecordAudio = NO;
 			
             recordingWillBeStopped = NO;
             self.recording = NO;
             [self.delegate recordingDidStop];
+            [self clearMovieURLs];
             self.movieURL = [self newMovieURL];
+            [self initializeAssetWriters];
 		}
 		else {
 			[self showError:[assetWriter error]];
 		}
+        
 	});
+    [self.segmentationTimer invalidate];
+    self.segmentationTimer = nil;
+}
+
+- (void) clearMovieURLs {
+    // TODO: write out movie file names to file
+    self.movieURLs = [NSMutableArray array];
 }
 
 #pragma mark Processing
@@ -388,30 +451,32 @@
 	CFRetain(sampleBuffer);
 	CFRetain(formatDescription);
 	dispatch_async(movieWritingQueue, ^{
-
-		if ( assetWriter ) {
+		if ( recordingAssetWriter ) {
 		
 			BOOL wasReadyToRecord = (readyToRecordAudio && readyToRecordVideo);
 			
 			if (connection == videoConnection) {
 				
 				// Initialize the video input if this is not done yet
-				if (!readyToRecordVideo)
-					readyToRecordVideo = [self setupAssetWriterVideoInput:formatDescription];
+				if (!readyToRecordVideo) {
+					readyToRecordVideo = [self setupVideoAssetWriter:recordingAssetWriter videoInput:formatDescription];
+                }
 				
 				// Write video data to file
-				if (readyToRecordVideo && readyToRecordAudio)
-					[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo];
+				if (readyToRecordVideo && readyToRecordAudio) {
+					[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo toAssetWriter:recordingAssetWriter];
+                }
 			}
 			else if (connection == audioConnection) {
 				
 				// Initialize the audio input if this is not done yet
-				if (!readyToRecordAudio)
-					readyToRecordAudio = [self setupAssetWriterAudioInput:formatDescription];
+				if (!readyToRecordAudio) {
+                    readyToRecordAudio = [self setupAudioAssetWriter:recordingAssetWriter audioInput:formatDescription];
+                }
 				
 				// Write audio data to file
 				if (readyToRecordAudio && readyToRecordVideo)
-					[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio];
+					[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio toAssetWriter:recordingAssetWriter];
 			}
 			
 			BOOL isReadyToRecord = (readyToRecordAudio && readyToRecordVideo);
