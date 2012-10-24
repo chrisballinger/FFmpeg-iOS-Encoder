@@ -65,11 +65,10 @@
 	CMBufferQueueRef previewBufferQueue;
 	
 	AVAssetWriter *recordingAssetWriter;
-    AVAssetWriter *standbyAssetWriter;
+    //AVAssetWriter *standbyAssetWriter;
 	AVAssetWriterInput *assetWriterAudioIn;
 	AVAssetWriterInput *assetWriterVideoIn;
 	dispatch_queue_t movieWritingQueue;
-    dispatch_queue_t segmentationQueue;
     
 	AVCaptureVideoOrientation referenceOrientation;
 	AVCaptureVideoOrientation videoOrientation;

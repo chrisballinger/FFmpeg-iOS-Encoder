@@ -83,7 +83,6 @@
         self.movieURL = [self newMovieURL];
         self.movieURLs = [NSMutableArray array];
         [movieURLs addObject:movieURL];
-        segmentationQueue = dispatch_queue_create("Segmentation Queue", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -252,7 +251,9 @@
 {
 	float bitsPerPixel;
 	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(videoFormatDescription);
-	int numPixels = dimensions.width * dimensions.height;
+    CGFloat width = 640;
+    CGFloat height = 480;
+	int numPixels = width * height;
 	int bitsPerSecond;
 	
 	// Assume that lower-than-SD resolutions are intended for streaming, and use a lower bitrate
@@ -265,8 +266,8 @@
 	
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
-											  [NSNumber numberWithInteger:dimensions.width], AVVideoWidthKey,
-											  [NSNumber numberWithInteger:dimensions.height], AVVideoHeightKey,
+											  [NSNumber numberWithInteger:width], AVVideoWidthKey,
+											  [NSNumber numberWithInteger:height], AVVideoHeightKey,
 											  [NSDictionary dictionaryWithObjectsAndKeys:
 											   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
 											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
@@ -308,7 +309,7 @@
     if (self.segmentationTimer) {
         [self.segmentationTimer invalidate];
     }
-    self.segmentationTimer = [NSTimer scheduledTimerWithTimeInterval:5.0f target:self selector:@selector(segmentRecording:) userInfo:nil repeats:YES];
+    //self.segmentationTimer = [NSTimer scheduledTimerWithTimeInterval:5.0f target:self selector:@selector(segmentRecording:) userInfo:nil repeats:YES];
 }
 
 - (void) initializeAssetWriters {
@@ -317,13 +318,13 @@
     recordingAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
     if (error)
         [self showError:error];
-    standbyAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
+    //standbyAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
     if (error)
         [self showError:error];
 }
 
 - (void) segmentRecording:(NSTimer*)timer {
-    dispatch_async(segmentationQueue, ^{
+    dispatch_async(movieWritingQueue, ^{
 		
 		// recordingDidStop is called from saveMovieToCameraRoll
 		//[self.delegate recordingWillStop];
@@ -332,7 +333,7 @@
         
         AVAssetWriter *currentlyRecordingAssetWriter = recordingAssetWriter;
         // Create an asset writer
-        recordingAssetWriter = standbyAssetWriter;
+        //recordingAssetWriter = standbyAssetWriter;
         readyToRecordVideo = NO;
         readyToRecordAudio = NO;
         
@@ -340,7 +341,7 @@
 		AVAssetWriter *newAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
         if (error)
 			[self showError:error];
-        standbyAssetWriter = newAssetWriter;
+        //standbyAssetWriter = newAssetWriter;
 
         if ([currentlyRecordingAssetWriter finishWriting]) {
 		}
@@ -451,7 +452,7 @@
 	CFRetain(sampleBuffer);
 	CFRetain(formatDescription);
 	dispatch_async(movieWritingQueue, ^{
-		if ( recordingAssetWriter ) {
+		if ( recordingAssetWriter && (self.recording || recordingWillBeStarted)) {
 		
 			BOOL wasReadyToRecord = (readyToRecordAudio && readyToRecordVideo);
 			
@@ -630,6 +631,7 @@
 
 - (void)showError:(NSError *)error
 {
+    NSLog(@"Error: %@%@",[error localizedDescription], [error userInfo]);
     CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, ^(void) {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:[error localizedDescription]
                                                             message:[error localizedFailureReason]

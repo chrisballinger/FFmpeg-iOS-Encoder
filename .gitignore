@@ -7,3 +7,5 @@ xcuserdata
 .svn
 DerivedData
 *.orig
+ffmpeg-iOS/build
+ffmpeg-iOS/dependencies
