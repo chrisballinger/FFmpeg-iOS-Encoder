@@ -47,6 +47,15 @@
 
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CMBufferQueue.h>
+#include <math.h>
+
+#include <libavutil/opt.h>
+#include <libavcodec/avcodec.h>
+#include <libavutil/audioconvert.h>
+#include <libavutil/common.h>
+#include <libavutil/imgutils.h>
+#include <libavutil/mathematics.h>
+#include <libavutil/samplefmt.h>
 
 @protocol RosyWriterVideoProcessorDelegate;
 
@@ -69,6 +78,7 @@
 	AVAssetWriterInput *assetWriterAudioIn;
 	AVAssetWriterInput *assetWriterVideoIn;
 	dispatch_queue_t movieWritingQueue;
+    dispatch_queue_t ffmpegWritingQueue;
     
 	AVCaptureVideoOrientation referenceOrientation;
 	AVCaptureVideoOrientation videoOrientation;
@@ -83,6 +93,13 @@
 	BOOL recordingWillBeStopped;
 
 	BOOL recording;
+    
+    AVCodec *codec;
+    AVCodecContext *c;
+    int frameNumber, ret, x, y, got_output;
+    FILE *f;
+    AVFrame *frame;
+    AVPacket pkt;
 }
 
 @property (readwrite, weak) id <RosyWriterVideoProcessorDelegate> delegate;
