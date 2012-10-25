@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
+#include <libavcodec/avcodec.h>
 
-@protocol FFAVEncoderDelegate <NSObject>
+@protocol FFAVEncoder <NSObject>
 - (void) setupEncoder;
 - (void) finishEncoding;
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer;
@@ -17,7 +18,7 @@
 
 @interface FFEncoder : NSObject
 
-@property (nonatomic, strong) id<FFAVEncoderDelegate> videoEncoder;
-@property (nonatomic, strong) id<FFAVEncoderDelegate> audioEncoder;
+@property (nonatomic, strong) id<FFAVEncoder> videoEncoder;
+@property (nonatomic, strong) id<FFAVEncoder> audioEncoder;
 
 @end

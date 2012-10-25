@@ -7,10 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#include <libavcodec/avcodec.h>
 #import "FFEncoder.h"
 
-@interface FFVideoEncoder : NSObject <FFAVEncoderDelegate> {
+@interface FFVideoEncoder : NSObject <FFAVEncoder> {
     AVCodec *codec;
     AVCodecContext *c;
     int frameNumber, ret, got_output;
