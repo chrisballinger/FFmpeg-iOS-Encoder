@@ -72,6 +72,7 @@
 	AVCaptureConnection *audioConnection;
 	AVCaptureConnection *videoConnection;
 	CMBufferQueueRef previewBufferQueue;
+    CMBufferQueueRef ffmpegBufferQueue;
 	
 	AVAssetWriter *recordingAssetWriter;
     //AVAssetWriter *standbyAssetWriter;

@@ -356,11 +356,24 @@
 
 - (void) encodeVideoFrameWithFFmpeg:(CVImageBufferRef)pixelBuffer {
     
-    //CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
+    CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
+    
+    /*CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer
+                                               options:[NSDictionary dictionaryWithObjectsAndKeys:[NSNull null], kCIImageColorSpace, nil]];
+    CGAffineTransform scale = CGAffineTransformMakeScale(640, 480);
+    ciImage = [ciImage imageByApplyingTransform:scale];*/
 	
-	int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
-	int bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
+	//int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
+	//int bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
 	unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    //NSLog(@"buffer: (%d, %d)",bufferWidth, bufferHeight);
+    
+    /*for( int row = 0; row < bufferHeight; row++ ) {
+		for( int column = 0; column < bufferWidth; column++ ) {
+			pixel[1] = 0; // De-green (second pixel in BGRA is green)
+			pixel += BYTES_PER_PIXEL;
+		}
+	}*/
     
     av_init_packet(&pkt);
     pkt.data = NULL;    // packet data will be allocated by the encoder
@@ -369,15 +382,16 @@
     fflush(stdout);
     for(y=0;y<c->height;y++) {
         for(x=0;x<c->width;x++) {
-            frame->data[0][y * frame->linesize[0] + x] = x + y + frameNumber * 3;
+            frame->data[0][y * frame->linesize[0] + x] = pixel[0];
+            pixel += BYTES_PER_PIXEL;
         }
     }
     
     /* Cb and Cr */
     for(y=0;y<c->height/2;y++) {
         for(x=0;x<c->width/2;x++) {
-            frame->data[1][y * frame->linesize[1] + x] = 128 + y + frameNumber * 2;
-            frame->data[2][y * frame->linesize[2] + x] = 64 + x + frameNumber * 5;
+            frame->data[1][y * frame->linesize[1] + x] = 0;
+            frame->data[2][y * frame->linesize[2] + x] = 0;
         }
     }
     
@@ -396,7 +410,7 @@
         av_free_packet(&pkt);
     }
     frameNumber++;
-    //CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
+    CVPixelBufferUnlockBaseAddress( pixelBuffer, 0 );
 }
 
 - (BOOL) setupVideoAssetWriter:(AVAssetWriter*)assetWriter
@@ -608,14 +622,22 @@
 	}
     
 	CFRetain(sampleBuffer);
+    CFRetain(sampleBuffer);
 	CFRetain(formatDescription);
     
     dispatch_async(ffmpegWritingQueue, ^{
         if (self.recording || recordingWillBeStarted) {
             if (connection == videoConnection) {
                 // Write video data to file
-                CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-                [self encodeVideoFrameWithFFmpeg:pixelBuffer];
+                OSStatus err = CMBufferQueueEnqueue(ffmpegBufferQueue, sampleBuffer);
+                if ( !err ) {
+                    CMSampleBufferRef sbuf = (CMSampleBufferRef)CMBufferQueueDequeueAndRetain(ffmpegBufferQueue);
+                    if (sbuf) {
+                        CVImageBufferRef pixBuf = CMSampleBufferGetImageBuffer(sbuf);
+                        [self encodeVideoFrameWithFFmpeg:pixBuf];
+                        CFRelease(sbuf);
+                    }
+                }
             }
             else if (connection == audioConnection) {
                 
@@ -623,6 +645,7 @@
                 //[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio toAssetWriter:recordingAssetWriter];
             }
         }
+        CFRelease(sampleBuffer);
     });
     
 	dispatch_async(movieWritingQueue, ^{
@@ -751,7 +774,10 @@
 	OSStatus err = CMBufferQueueCreate(kCFAllocatorDefault, 1, CMBufferQueueGetCallbacksForUnsortedSampleBuffers(), &previewBufferQueue);
 	if (err)
 		[self showError:[NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]];
-	
+    err = CMBufferQueueCreate(kCFAllocatorDefault, 1, CMBufferQueueGetCallbacksForUnsortedSampleBuffers(), &ffmpegBufferQueue);
+	if (err)
+		[self showError:[NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]];
+    
 	// Create serial queue for movie writing
 	movieWritingQueue = dispatch_queue_create("Movie Writing Queue", DISPATCH_QUEUE_SERIAL);
 	ffmpegWritingQueue = dispatch_queue_create("FFmpeg Writing Queue", DISPATCH_QUEUE_SERIAL);
@@ -796,9 +822,17 @@
 		CFRelease(previewBufferQueue);
 		previewBufferQueue = NULL;	
 	}
+    if (ffmpegBufferQueue) {
+		CFRelease(ffmpegBufferQueue);
+		ffmpegBufferQueue = NULL;
+	}
 	if (movieWritingQueue) {
 		dispatch_release(movieWritingQueue);
 		movieWritingQueue = NULL;
+	}
+    if (ffmpegWritingQueue) {
+		dispatch_release(ffmpegWritingQueue);
+		ffmpegWritingQueue = NULL;
 	}
 }
 
