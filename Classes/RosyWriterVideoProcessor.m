@@ -55,7 +55,7 @@
 #define AUDIO_INBUF_SIZE 20480
 #define AUDIO_REFILL_THRESH 4096
 
-#define BYTES_PER_PIXEL 4
+#define BYTES_PER_PIXEL 3
 
 @interface RosyWriterVideoProcessor ()
 
@@ -358,40 +358,33 @@
     
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
     
-    /*CIImage *ciImage = [CIImage imageWithCVPixelBuffer:pixelBuffer
-                                               options:[NSDictionary dictionaryWithObjectsAndKeys:[NSNull null], kCIImageColorSpace, nil]];
-    CGAffineTransform scale = CGAffineTransformMakeScale(640, 480);
-    ciImage = [ciImage imageByApplyingTransform:scale];*/
-	
-	//int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
-	//int bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
+	int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
+	int bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
 	unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
-    //NSLog(@"buffer: (%d, %d)",bufferWidth, bufferHeight);
-    
-    /*for( int row = 0; row < bufferHeight; row++ ) {
-		for( int column = 0; column < bufferWidth; column++ ) {
-			pixel[1] = 0; // De-green (second pixel in BGRA is green)
-			pixel += BYTES_PER_PIXEL;
-		}
-	}*/
     
     av_init_packet(&pkt);
     pkt.data = NULL;    // packet data will be allocated by the encoder
     pkt.size = 0;
     
+    //unsigned char y_pixel = pixel[0];
+    
+    
     fflush(stdout);
-    for(y=0;y<c->height;y++) {
-        for(x=0;x<c->width;x++) {
+    for (int y = 0; y < bufferHeight; y++) {
+        for (int x = 0; x < bufferWidth; x++) {
             frame->data[0][y * frame->linesize[0] + x] = pixel[0];
-            pixel += BYTES_PER_PIXEL;
+            pixel++;
         }
     }
-    
+
     /* Cb and Cr */
-    for(y=0;y<c->height/2;y++) {
-        for(x=0;x<c->width/2;x++) {
-            frame->data[1][y * frame->linesize[1] + x] = 0;
-            frame->data[2][y * frame->linesize[2] + x] = 0;
+    
+    for (int y = 0; y < bufferHeight / 2; y++) {
+        for (int x = 0; x < bufferWidth / 2; x++) {
+            frame->data[1][y * frame->linesize[1] + x] = pixel[1];
+            pixel++;
+            frame->data[2][y * frame->linesize[2] + x] = pixel[2];
+            pixel++;
         }
     }
     
@@ -725,6 +718,7 @@
 	 * Create capture session
 	 */
     captureSession = [[AVCaptureSession alloc] init];
+    captureSession.sessionPreset = AVCaptureSessionPreset640x480;
     
     /*
 	 * Create audio connection
@@ -756,7 +750,12 @@
 		alwaysDiscardsLateVideoFrames property to NO. 
 	 */
 	[videoOut setAlwaysDiscardsLateVideoFrames:YES];
-	[videoOut setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA] forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
+        /*
+     2012-10-24 22:09:13.074 RosyWriter[86513:707] kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+     2012-10-24 22:09:13.080 RosyWriter[86513:707] kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+     2012-10-24 22:09:13.081 RosyWriter[86513:707] kCVPixelFormatType_32BGRA
+     */
+	[videoOut setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange] forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
 	dispatch_queue_t videoCaptureQueue = dispatch_queue_create("Video Capture Queue", DISPATCH_QUEUE_SERIAL);
 	[videoOut setSampleBufferDelegate:self queue:videoCaptureQueue];
 	dispatch_release(videoCaptureQueue);

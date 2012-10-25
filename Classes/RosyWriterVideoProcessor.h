@@ -97,7 +97,7 @@
     
     AVCodec *codec;
     AVCodecContext *c;
-    int frameNumber, ret, x, y, got_output;
+    int frameNumber, ret, got_output;
     FILE *f;
     AVFrame *frame;
     AVPacket pkt;

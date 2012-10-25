@@ -223,10 +223,10 @@ enum {
                                                                 pixelBuffer,
                                                                 NULL,
                                                                 GL_TEXTURE_2D,
-                                                                GL_RGBA,
+                                                                GL_LUMINANCE,
                                                                 frameWidth,
                                                                 frameHeight,
-                                                                GL_BGRA,
+                                                                GL_LUMINANCE,
                                                                 GL_UNSIGNED_BYTE,
                                                                 0,
                                                                 &texture);
