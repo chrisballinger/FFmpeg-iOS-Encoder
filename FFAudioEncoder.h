@@ -14,7 +14,7 @@
     AVCodecContext *c;
     AVFrame *frame;
     AVPacket pkt;
-    int i, j, k, ret, got_output;
+    int ret, got_output;
     int buffer_size;
     FILE *f;
     uint16_t *samples;

@@ -143,6 +143,7 @@ static int select_channel_layout(AVCodec *codec)
 }
 - (void) finishEncoding {
     /* get the delayed frames */
+    int i = 0;
     for (got_output = 1; got_output; i++) {
         ret = avcodec_encode_audio2(c, &pkt, NULL, &got_output);
         if (ret < 0) {
@@ -163,22 +164,34 @@ static int select_channel_layout(AVCodec *codec)
     av_free(c);
 }
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
-    return;
-    /* encode a single tone sound */
-    t = 0;
-    tincr = 2 * M_PI * 440.0 / c->sample_rate;
-    for(i=0;i<200;i++) {
+    // NSLog(@"%@",ref);
+    //copy data to file
+    //read next one
+    AudioBufferList audioBufferList;
+    CMBlockBufferRef blockBuffer;
+    CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sampleBuffer, NULL, &audioBufferList, sizeof(audioBufferList), NULL, NULL, 0, &blockBuffer);
+    // NSLog(@"%@",blockBuffer);
+    
+    for( int y=0; y<audioBufferList.mNumberBuffers; y++ )
+    {
+        AudioBuffer audioBuffer = audioBufferList.mBuffers[y];
+        UInt32 mNumberChannels = audioBuffer.mNumberChannels;
+        UInt32 mDataByteSize = audioBuffer.mDataByteSize;
+        
+        //[data appendBytes:audio_frame length:audioBuffer.mDataByteSize];
+        
         av_init_packet(&pkt);
         pkt.data = NULL; // packet data will be allocated by the encoder
         pkt.size = 0;
         
-        for (j = 0; j < c->frame_size; j++) {
-            samples[2*j] = (int)(sin(t) * 10000);
-            
-            for (k = 1; k < c->channels; k++)
-                samples[2*j + k] = samples[2*j];
-            t += tincr;
+        int bufferSize = audioBuffer.mDataByteSize / sizeof(Float32);
+        int frameSize = c->frame_size;
+        Float32 *audio_frame = audioBuffer.mData;
+        for( int i=0; i<bufferSize; i++ ) {
+            uint16_t currentSample = (uint16_t)audio_frame[i];
+            samples[i] =  currentSample;
         }
+        
         /* encode the samples */
         ret = avcodec_encode_audio2(c, &pkt, frame, &got_output);
         if (ret < 0) {
@@ -189,8 +202,9 @@ static int select_channel_layout(AVCodec *codec)
             fwrite(pkt.data, 1, pkt.size, f);
             av_free_packet(&pkt);
         }
+        
     }
-
+    CFRelease(blockBuffer);
 }
 
 @end
