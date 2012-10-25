@@ -354,8 +354,8 @@
     printf("\n");
 }
 
-- (void) encodeVideoFrameWithFFmpeg:(CVImageBufferRef)pixelBuffer {
-    
+- (void) encodeVideoFrameWithFFmpeg:(CMSampleBufferRef)sampleBuffer {
+    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
     
 	int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
@@ -626,8 +626,7 @@
                 if ( !err ) {
                     CMSampleBufferRef sbuf = (CMSampleBufferRef)CMBufferQueueDequeueAndRetain(ffmpegBufferQueue);
                     if (sbuf) {
-                        CVImageBufferRef pixBuf = CMSampleBufferGetImageBuffer(sbuf);
-                        [self encodeVideoFrameWithFFmpeg:pixBuf];
+                        [self encodeVideoFrameWithFFmpeg:sbuf];
                         CFRelease(sbuf);
                     }
                 }
