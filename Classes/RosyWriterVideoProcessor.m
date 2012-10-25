@@ -306,6 +306,7 @@
 {
     dispatch_async(ffmpegWritingQueue, ^{
         [self.ffEncoder.videoEncoder setupEncoder];
+        [self.ffEncoder.audioEncoder setupEncoder];
     });
 	dispatch_async(movieWritingQueue, ^{
 	
@@ -331,44 +332,13 @@
     recordingAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
     if (error)
         [self showError:error];
-    //standbyAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
-    if (error)
-        [self showError:error];
-}
-
-- (void) segmentRecording:(NSTimer*)timer {
-    dispatch_async(movieWritingQueue, ^{
-		
-		// recordingDidStop is called from saveMovieToCameraRoll
-		//[self.delegate recordingWillStop];
-        self.movieURL = [self newMovieURL];
-        [self.movieURLs addObject:movieURL];
-        
-        AVAssetWriter *currentlyRecordingAssetWriter = recordingAssetWriter;
-        // Create an asset writer
-        //recordingAssetWriter = standbyAssetWriter;
-        readyToRecordVideo = NO;
-        readyToRecordAudio = NO;
-        
-        NSError *error;
-		AVAssetWriter *newAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
-        if (error)
-			[self showError:error];
-        //standbyAssetWriter = newAssetWriter;
-
-        if ([currentlyRecordingAssetWriter finishWriting]) {
-		}
-		else {
-			[self showError:[currentlyRecordingAssetWriter error]];
-		}
-
-	});
 }
 
 - (void) stopRecording
 {
     dispatch_async(ffmpegWritingQueue, ^{
         [self.ffEncoder.videoEncoder finishEncoding];
+        [self.ffEncoder.audioEncoder finishEncoding];
     });
 	dispatch_async(movieWritingQueue, ^{
 		AVAssetWriter *assetWriter = recordingAssetWriter;
@@ -464,8 +434,8 @@
 			});
 		}
 	}
-    
-	CFRetain(sampleBuffer);
+    //
+    CFRetain(sampleBuffer);
     CFRetain(sampleBuffer);
 	CFRetain(formatDescription);
     
@@ -483,9 +453,7 @@
                 }
             }
             else if (connection == audioConnection) {
-                
-                // Write audio data to file
-                //[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio toAssetWriter:recordingAssetWriter];
+                [self.ffEncoder.audioEncoder encodeSampleBuffer:sampleBuffer];
             }
         }
         CFRelease(sampleBuffer);

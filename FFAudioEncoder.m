@@ -163,6 +163,7 @@ static int select_channel_layout(AVCodec *codec)
     av_free(c);
 }
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
+    return;
     /* encode a single tone sound */
     t = 0;
     tincr = 2 * M_PI * 440.0 / c->sample_rate;
