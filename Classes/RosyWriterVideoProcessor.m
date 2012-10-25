@@ -381,9 +381,9 @@
     
     for (int y = 0; y < bufferHeight / 2; y++) {
         for (int x = 0; x < bufferWidth / 2; x++) {
-            frame->data[1][y * frame->linesize[1] + x] = pixel[1];
+            frame->data[1][y * frame->linesize[1] + x] = pixel[0];
             pixel++;
-            frame->data[2][y * frame->linesize[2] + x] = pixel[2];
+            frame->data[2][y * frame->linesize[2] + x] = pixel[0];
             pixel++;
         }
     }
