@@ -27,6 +27,9 @@
 		AFC35FDC13FEFC0A0043EAD6 /* passThrough.fsh in Resources */ = {isa = PBXBuildFile; fileRef = AFC35FDA13FEFC0A0043EAD6 /* passThrough.fsh */; };
 		AFC35FDD13FEFC0A0043EAD6 /* passThrough.vsh in Resources */ = {isa = PBXBuildFile; fileRef = AFC35FDB13FEFC0A0043EAD6 /* passThrough.vsh */; };
 		AFC35FE813FF35900043EAD6 /* RosyWriterVideoProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = AFC35FE713FF35900043EAD6 /* RosyWriterVideoProcessor.m */; };
+		D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658221639DBA100F1BF7C /* FFVideoEncoder.m */; };
+		D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658271639E7BA00F1BF7C /* FFEncoder.m */; };
+		D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D966582A1639E88800F1BF7C /* FFAudioEncoder.m */; };
 		D9D011C5163898F7007F62B1 /* ffmpeg in Resources */ = {isa = PBXBuildFile; fileRef = D9D01170163898F7007F62B1 /* ffmpeg */; };
 		D9D011C6163898F7007F62B1 /* ffprobe in Resources */ = {isa = PBXBuildFile; fileRef = D9D01171163898F7007F62B1 /* ffprobe */; };
 		D9D011C7163898F7007F62B1 /* ffserver in Resources */ = {isa = PBXBuildFile; fileRef = D9D01172163898F7007F62B1 /* ffserver */; };
@@ -67,6 +70,12 @@
 		AFC35FDB13FEFC0A0043EAD6 /* passThrough.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = passThrough.vsh; sourceTree = "<group>"; };
 		AFC35FE613FF35900043EAD6 /* RosyWriterVideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RosyWriterVideoProcessor.h; path = Classes/RosyWriterVideoProcessor.h; sourceTree = "<group>"; };
 		AFC35FE713FF35900043EAD6 /* RosyWriterVideoProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RosyWriterVideoProcessor.m; path = Classes/RosyWriterVideoProcessor.m; sourceTree = "<group>"; };
+		D96658211639DBA100F1BF7C /* FFVideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFVideoEncoder.h; sourceTree = "<group>"; };
+		D96658221639DBA100F1BF7C /* FFVideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFVideoEncoder.m; sourceTree = "<group>"; };
+		D96658261639E7BA00F1BF7C /* FFEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFEncoder.h; sourceTree = "<group>"; };
+		D96658271639E7BA00F1BF7C /* FFEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFEncoder.m; sourceTree = "<group>"; };
+		D96658291639E88800F1BF7C /* FFAudioEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFAudioEncoder.h; sourceTree = "<group>"; };
+		D966582A1639E88800F1BF7C /* FFAudioEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFAudioEncoder.m; sourceTree = "<group>"; };
 		D9D01170163898F7007F62B1 /* ffmpeg */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = ffmpeg; sourceTree = "<group>"; };
 		D9D01171163898F7007F62B1 /* ffprobe */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = ffprobe; sourceTree = "<group>"; };
 		D9D01172163898F7007F62B1 /* ffserver */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = ffserver; sourceTree = "<group>"; };
@@ -184,6 +193,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				D96658251639DBAE00F1BF7C /* FFmpeg Wrapper */,
 				D9D011CE1638A190007F62B1 /* libz.dylib */,
 				D9D0116E163898F7007F62B1 /* dependencies */,
 				AFC35FD913FEFC0A0043EAD6 /* Shaders */,
@@ -256,6 +266,19 @@
 				AFC35FDB13FEFC0A0043EAD6 /* passThrough.vsh */,
 			);
 			path = Shaders;
+			sourceTree = "<group>";
+		};
+		D96658251639DBAE00F1BF7C /* FFmpeg Wrapper */ = {
+			isa = PBXGroup;
+			children = (
+				D96658211639DBA100F1BF7C /* FFVideoEncoder.h */,
+				D96658221639DBA100F1BF7C /* FFVideoEncoder.m */,
+				D96658291639E88800F1BF7C /* FFAudioEncoder.h */,
+				D966582A1639E88800F1BF7C /* FFAudioEncoder.m */,
+				D96658261639E7BA00F1BF7C /* FFEncoder.h */,
+				D96658271639E7BA00F1BF7C /* FFEncoder.m */,
+			);
+			name = "FFmpeg Wrapper";
 			sourceTree = "<group>";
 		};
 		D9D0116E163898F7007F62B1 /* dependencies */ = {
@@ -498,6 +521,9 @@
 				26B0755913981396003A24D9 /* RosyWriterPreviewView.m in Sources */,
 				AFC35FE813FF35900043EAD6 /* RosyWriterVideoProcessor.m in Sources */,
 				AF928C10140C2AD300844BAD /* ShaderUtilities.c in Sources */,
+				D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */,
+				D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */,
+				D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

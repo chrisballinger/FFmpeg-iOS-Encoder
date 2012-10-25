@@ -48,14 +48,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CMBufferQueue.h>
 #include <math.h>
-
-#include <libavutil/opt.h>
-#include <libavcodec/avcodec.h>
-#include <libavutil/audioconvert.h>
-#include <libavutil/common.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/samplefmt.h>
+#import "FFEncoder.h"
 
 @protocol RosyWriterVideoProcessorDelegate;
 
@@ -95,12 +88,7 @@
 
 	BOOL recording;
     
-    AVCodec *codec;
-    AVCodecContext *c;
-    int frameNumber, ret, got_output;
-    FILE *f;
-    AVFrame *frame;
-    AVPacket pkt;
+
 }
 
 @property (readwrite, weak) id <RosyWriterVideoProcessorDelegate> delegate;
@@ -111,6 +99,7 @@
 @property (nonatomic, strong) NSURL *movieURL;
 @property (nonatomic, strong) NSTimer *segmentationTimer;
 @property (nonatomic, strong) NSMutableArray *movieURLs;
+@property (nonatomic, strong) FFEncoder *ffEncoder;
 
 @property (readwrite) AVCaptureVideoOrientation referenceOrientation;
 
