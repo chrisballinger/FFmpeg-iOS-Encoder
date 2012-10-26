@@ -95,8 +95,10 @@ static int select_channel_layout(AVCodec *codec)
     }
     
     /* select other audio parameters supported by the encoder */
-    c->sample_rate    = select_sample_rate(codec);
-    c->channel_layout = select_channel_layout(codec);
+    //c->sample_rate    = select_sample_rate(codec);
+    c->sample_rate = 48000;
+    //c->channel_layout = select_channel_layout(codec);
+    c->channel_layout = AV_CH_LAYOUT_MONO;
     c->channels       = av_get_channel_layout_nb_channels(c->channel_layout);
     
     /* open it */
