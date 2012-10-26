@@ -110,9 +110,13 @@ static int select_channel_layout(AVCodec *codec)
     
     /* select other audio parameters supported by the encoder */
     //c->sample_rate    = select_sample_rate(codec);
-    c->sample_rate = 48000;
+    c->sample_rate = (int)currentASBD->mSampleRate;
     //c->channel_layout = select_channel_layout(codec);
-    c->channel_layout = AV_CH_LAYOUT_MONO;
+    if (currentASBD->mChannelsPerFrame == 1) {
+        c->channel_layout = AV_CH_LAYOUT_MONO;
+    } else if (currentASBD->mChannelsPerFrame == 2) {
+        c->channel_layout = AV_CH_LAYOUT_STEREO;
+    }
     c->channels       = av_get_channel_layout_nb_channels(c->channel_layout);
     
     /* open it */
@@ -202,11 +206,11 @@ static int select_channel_layout(AVCodec *codec)
         pkt.data = NULL; // packet data will be allocated by the encoder
         pkt.size = 0;
         
-        int bufferSize = audioBuffer.mDataByteSize / sizeof(Float32);
+        int bufferSize = audioBuffer.mDataByteSize / sizeof(uint16_t);
         int frameSize = c->frame_size;
-        Float32 *audio_frame = audioBuffer.mData;
+        uint16_t *audio_frame = audioBuffer.mData;
         for( int i=0; i<bufferSize; i++ ) {
-            Float32 currentSample = (Float32)audio_frame[i];
+            uint16_t currentSample = (uint16_t)audio_frame[i];
             samples[i] =  currentSample;
         }
         
