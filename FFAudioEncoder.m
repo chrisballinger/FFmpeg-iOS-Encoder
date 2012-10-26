@@ -206,12 +206,15 @@ static int select_channel_layout(AVCodec *codec)
         pkt.data = NULL; // packet data will be allocated by the encoder
         pkt.size = 0;
         
-        int bufferSize = audioBuffer.mDataByteSize / sizeof(uint16_t);
+        int bufferSize = audioBuffer.mDataByteSize / sizeof(short);
         int frameSize = c->frame_size;
-        uint16_t *audio_frame = audioBuffer.mData;
-        for( int i=0; i<bufferSize; i++ ) {
-            uint16_t currentSample = (uint16_t)audio_frame[i];
+        short *audio_frame = audioBuffer.mData;
+        for( int i=0; i< c->frame_size; i++ ) {
+            short currentSample = (short)audio_frame[i];
             samples[i] =  currentSample;
+            if (i >= bufferSize) {
+                samples[i] = 0;
+            }
         }
         
         /* encode the samples */

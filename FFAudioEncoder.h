@@ -14,7 +14,7 @@
     int ret, got_output;
     int buffer_size;
     FILE *f;
-    uint16_t *samples;
+    short *samples;
     float t, tincr;
 }
 
