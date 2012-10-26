@@ -7,8 +7,6 @@
 //
 
 #import "FFEncoder.h"
-#import "FFVideoEncoder.h"
-#import "FFAudioEncoder.h"
 
 @implementation FFEncoder
 @synthesize videoEncoder, audioEncoder;

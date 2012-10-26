@@ -17,7 +17,7 @@
 
 @implementation FFVideoEncoder
 
-- (void) setupEncoder {
+- (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription {
     c = NULL;
     frameNumber = 0;
     int codec_id = AV_CODEC_ID_MPEG1VIDEO;
@@ -80,10 +80,7 @@
         exit(1);
     }
     
-    // Encode frames here
-    
-    /* get the delayed frames */
-    
+    [super setupEncoderWithFormatDescription:newFormatDescription];
 }
 
 - (void) finishEncoding {
@@ -114,6 +111,7 @@
     av_freep(&frame->data[0]);
     avcodec_free_frame(&frame);
     printf("\n");
+    [super finishEncoding];
 }
 
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {

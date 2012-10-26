@@ -65,7 +65,7 @@ static int select_channel_layout(AVCodec *codec)
 }
 
 
-- (void) setupEncoder {
+- (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription {
     c = NULL;
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
@@ -141,7 +141,7 @@ static int select_channel_layout(AVCodec *codec)
         fprintf(stderr, "Could not setup audio frame\n");
         exit(1);
     }
-
+    [super setupEncoderWithFormatDescription:newFormatDescription];
 }
 - (void) finishEncoding {
     /* get the delayed frames */
@@ -164,6 +164,7 @@ static int select_channel_layout(AVCodec *codec)
     avcodec_free_frame(&frame);
     avcodec_close(c);
     av_free(c);
+    [super finishEncoding];
 }
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
     // NSLog(@"%@",ref);
@@ -190,7 +191,7 @@ static int select_channel_layout(AVCodec *codec)
         int frameSize = c->frame_size;
         Float32 *audio_frame = audioBuffer.mData;
         for( int i=0; i<bufferSize; i++ ) {
-            uint16_t currentSample = (uint16_t)audio_frame[i];
+            Float32 currentSample = (Float32)audio_frame[i];
             samples[i] =  currentSample;
         }
         

@@ -30,6 +30,7 @@
 		D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658221639DBA100F1BF7C /* FFVideoEncoder.m */; };
 		D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658271639E7BA00F1BF7C /* FFEncoder.m */; };
 		D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D966582A1639E88800F1BF7C /* FFAudioEncoder.m */; };
+		D99BE1E3163B370D0096AF6B /* FFAVEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D99BE1E2163B370D0096AF6B /* FFAVEncoder.m */; };
 		D9D011C5163898F7007F62B1 /* ffmpeg in Resources */ = {isa = PBXBuildFile; fileRef = D9D01170163898F7007F62B1 /* ffmpeg */; };
 		D9D011C6163898F7007F62B1 /* ffprobe in Resources */ = {isa = PBXBuildFile; fileRef = D9D01171163898F7007F62B1 /* ffprobe */; };
 		D9D011C7163898F7007F62B1 /* ffserver in Resources */ = {isa = PBXBuildFile; fileRef = D9D01172163898F7007F62B1 /* ffserver */; };
@@ -76,6 +77,8 @@
 		D96658271639E7BA00F1BF7C /* FFEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFEncoder.m; sourceTree = "<group>"; };
 		D96658291639E88800F1BF7C /* FFAudioEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFAudioEncoder.h; sourceTree = "<group>"; };
 		D966582A1639E88800F1BF7C /* FFAudioEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFAudioEncoder.m; sourceTree = "<group>"; };
+		D99BE1E1163B370D0096AF6B /* FFAVEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFAVEncoder.h; sourceTree = "<group>"; };
+		D99BE1E2163B370D0096AF6B /* FFAVEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFAVEncoder.m; sourceTree = "<group>"; };
 		D9D01170163898F7007F62B1 /* ffmpeg */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = ffmpeg; sourceTree = "<group>"; };
 		D9D01171163898F7007F62B1 /* ffprobe */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = ffprobe; sourceTree = "<group>"; };
 		D9D01172163898F7007F62B1 /* ffserver */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = ffserver; sourceTree = "<group>"; };
@@ -275,6 +278,8 @@
 				D96658221639DBA100F1BF7C /* FFVideoEncoder.m */,
 				D96658291639E88800F1BF7C /* FFAudioEncoder.h */,
 				D966582A1639E88800F1BF7C /* FFAudioEncoder.m */,
+				D99BE1E1163B370D0096AF6B /* FFAVEncoder.h */,
+				D99BE1E2163B370D0096AF6B /* FFAVEncoder.m */,
 				D96658261639E7BA00F1BF7C /* FFEncoder.h */,
 				D96658271639E7BA00F1BF7C /* FFEncoder.m */,
 			);
@@ -524,6 +529,7 @@
 				D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */,
 				D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */,
 				D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */,
+				D99BE1E3163B370D0096AF6B /* FFAVEncoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -7,13 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FFEncoder.h"
+#import "FFAVEncoder.h"
 
-@interface FFAudioEncoder : NSObject <FFAVEncoder> {
-    AVCodec *codec;
-    AVCodecContext *c;
-    AVFrame *frame;
-    AVPacket pkt;
+@interface FFAudioEncoder : FFAVEncoder {
     int ret, got_output;
     int buffer_size;
     FILE *f;

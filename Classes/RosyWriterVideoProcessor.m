@@ -304,10 +304,6 @@
 
 - (void) startRecording
 {
-    dispatch_async(ffmpegWritingQueue, ^{
-        [self.ffEncoder.videoEncoder setupEncoder];
-        [self.ffEncoder.audioEncoder setupEncoder];
-    });
 	dispatch_async(movieWritingQueue, ^{
 	
 		if ( recordingWillBeStarted || self.recording )
@@ -438,11 +434,15 @@
     CFRetain(sampleBuffer);
     CFRetain(sampleBuffer);
 	CFRetain(formatDescription);
+    CFRetain(formatDescription);
     
     dispatch_async(ffmpegWritingQueue, ^{
         if (self.recording || recordingWillBeStarted) {
             if (connection == videoConnection) {
                 // Write video data to file
+				if (!self.ffEncoder.videoEncoder.readyToEncode) {
+					[self.ffEncoder.videoEncoder setupEncoderWithFormatDescription:formatDescription];
+                }
                 OSStatus err = CMBufferQueueEnqueue(ffmpegBufferQueue, sampleBuffer);
                 if ( !err ) {
                     CMSampleBufferRef sbuf = (CMSampleBufferRef)CMBufferQueueDequeueAndRetain(ffmpegBufferQueue);
@@ -453,10 +453,14 @@
                 }
             }
             else if (connection == audioConnection) {
+                if (!self.ffEncoder.audioEncoder.readyToEncode) {
+					[self.ffEncoder.audioEncoder setupEncoderWithFormatDescription:formatDescription];
+                }
                 [self.ffEncoder.audioEncoder encodeSampleBuffer:sampleBuffer];
             }
         }
         CFRelease(sampleBuffer);
+        CFRelease(formatDescription);
     });
     
 	dispatch_async(movieWritingQueue, ^{
