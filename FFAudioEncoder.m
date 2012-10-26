@@ -66,6 +66,20 @@ static int select_channel_layout(AVCodec *codec)
 
 
 - (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription {
+    currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(newFormatDescription);
+    
+	size_t aclSize = 0;
+	const AudioChannelLayout *currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(newFormatDescription, &aclSize);
+	NSData *currentChannelLayoutData = nil;
+	
+	// AVChannelLayoutKey must be specified, but if we don't know any better give an empty data and let AVAssetWriter decide.
+	if ( currentChannelLayout && aclSize > 0 )
+		currentChannelLayoutData = [NSData dataWithBytes:currentChannelLayout length:aclSize];
+	else
+		currentChannelLayoutData = [NSData data];
+    
+    NSLog(@"audioStreamDescription:\n mSampleRate: %f \n mBytesPerPacket: %li \n mFramesPerPacket: %li \n mBytesPerFrame: %li \n mChannelsPerFrame: %li \n mBitsPerChannel: %li", currentASBD->mSampleRate, currentASBD->mBytesPerPacket, currentASBD->mFramesPerPacket, currentASBD->mBytesPerFrame, currentASBD->mChannelsPerFrame, currentASBD->mBitsPerChannel);
+    
     c = NULL;
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
@@ -164,6 +178,7 @@ static int select_channel_layout(AVCodec *codec)
     avcodec_free_frame(&frame);
     avcodec_close(c);
     av_free(c);
+    currentASBD = NULL;
     [super finishEncoding];
 }
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {

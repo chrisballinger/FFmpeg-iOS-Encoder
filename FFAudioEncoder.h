@@ -10,6 +10,7 @@
 #import "FFAVEncoder.h"
 
 @interface FFAudioEncoder : FFAVEncoder {
+    const AudioStreamBasicDescription *currentASBD;
     int ret, got_output;
     int buffer_size;
     FILE *f;

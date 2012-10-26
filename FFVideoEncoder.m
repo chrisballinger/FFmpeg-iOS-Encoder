@@ -18,6 +18,8 @@
 @implementation FFVideoEncoder
 
 - (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription {
+    CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(newFormatDescription);
+    
     c = NULL;
     frameNumber = 0;
     int codec_id = AV_CODEC_ID_MPEG1VIDEO;
@@ -39,8 +41,8 @@
     /* put sample parameters */
     c->bit_rate = 400000;
     /* resolution must be a multiple of two */
-    c->width = 640;
-    c->height = 480;
+    c->width = dimensions.width;
+    c->height = dimensions.height;
     /* frames per second */
     c->time_base= (AVRational){1,25};
     c->gop_size = 10; /* emit one intra frame every ten frames */

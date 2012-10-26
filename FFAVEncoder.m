@@ -20,9 +20,11 @@
 
 - (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription {
     formatDescription = newFormatDescription;
+    CFRetain(formatDescription);
     readyToEncode = YES;
 }
 - (void) finishEncoding {
+    CFRelease(formatDescription);
     formatDescription = NULL;
     readyToEncode = NO;
 }

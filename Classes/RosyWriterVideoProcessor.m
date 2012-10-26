@@ -261,8 +261,8 @@
 {
 	float bitsPerPixel;
 	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(videoFormatDescription);
-    CGFloat width = 640;
-    CGFloat height = 480;
+    CGFloat width = dimensions.width;
+    CGFloat height = dimensions.height;
 	int numPixels = width * height;
 	int bitsPerSecond;
 	
