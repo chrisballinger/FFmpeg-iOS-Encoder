@@ -11,6 +11,14 @@
 
 @implementation FFAudioEncoder
 
+- (id) init {
+    if (self = [super init]) {
+        buffer = NULL;
+        bytesInBuffer = 0;
+    }
+    return self;
+}
+
 /* check that a given sample format is supported by the encoder */
 static int check_sample_fmt(AVCodec *codec, enum AVSampleFormat sample_fmt)
 {
@@ -159,6 +167,7 @@ static int select_channel_layout(AVCodec *codec)
         fprintf(stderr, "Could not setup audio frame\n");
         exit(1);
     }
+    
     [super setupEncoderWithFormatDescription:newFormatDescription];
 }
 - (void) finishEncoding {
@@ -183,6 +192,8 @@ static int select_channel_layout(AVCodec *codec)
     avcodec_close(c);
     av_free(c);
     currentASBD = NULL;
+    free(buffer);
+    buffer = NULL;
     [super finishEncoding];
 }
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
@@ -197,25 +208,43 @@ static int select_channel_layout(AVCodec *codec)
     for( int y=0; y<audioBufferList.mNumberBuffers; y++ )
     {
         AudioBuffer audioBuffer = audioBufferList.mBuffers[y];
-        UInt32 mNumberChannels = audioBuffer.mNumberChannels;
-        UInt32 mDataByteSize = audioBuffer.mDataByteSize;
-        
-        //[data appendBytes:audio_frame length:audioBuffer.mDataByteSize];
+        uint8_t *input_bytes = audioBuffer.mData;
+
+        if (buffer == NULL) {
+            buffer = malloc(audioBuffer.mDataByteSize);
+        }
+        if (bytesInBuffer == 0) {
+            for (int i = 0; i < audioBuffer.mDataByteSize; i++) {
+                buffer[i] = input_bytes[i];
+            }
+            bytesInBuffer = audioBuffer.mDataByteSize;
+            continue;
+        }
         
         av_init_packet(&pkt);
         pkt.data = NULL; // packet data will be allocated by the encoder
         pkt.size = 0;
         
-        int bufferSize = audioBuffer.mDataByteSize / sizeof(short);
-        int frameSize = c->frame_size;
-        short *audio_frame = audioBuffer.mData;
-        for( int i=0; i< c->frame_size; i++ ) {
-            short currentSample = (short)audio_frame[i];
-            samples[i] =  currentSample;
-            if (i >= bufferSize) {
-                samples[i] = 0;
-            }
+        // Copy buffer's bytes into samples
+        int samplesIndex = 0;
+        for (; samplesIndex < bytesInBuffer; samplesIndex++) {
+            samples[samplesIndex] = buffer[samplesIndex];
         }
+        
+        // Copy some of input buffer to fill up samples
+        int inputBytesIndex = 0;
+        for (; samplesIndex < buffer_size; samplesIndex++) {
+            samples[samplesIndex] = input_bytes[inputBytesIndex];
+            inputBytesIndex++;
+        }
+        
+        // Copy rest of input buffer to buffer
+        int bufferIndex = 0;
+        for (; inputBytesIndex < audioBuffer.mDataByteSize; bufferIndex++) {
+            buffer[bufferIndex] = input_bytes[inputBytesIndex];
+            inputBytesIndex++;
+        }
+        bytesInBuffer = bufferIndex;
         
         /* encode the samples */
         ret = avcodec_encode_audio2(c, &pkt, frame, &got_output);

@@ -14,7 +14,9 @@
     int ret, got_output;
     int buffer_size;
     FILE *f;
-    short *samples;
+    uint8_t *samples;
+    uint8_t *buffer;
+    NSUInteger bytesInBuffer;
     float t, tincr;
 }
 
