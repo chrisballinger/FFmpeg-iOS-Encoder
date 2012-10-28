@@ -31,9 +31,6 @@
 		D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658271639E7BA00F1BF7C /* FFEncoder.m */; };
 		D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D966582A1639E88800F1BF7C /* FFAudioEncoder.m */; };
 		D99BE1E3163B370D0096AF6B /* FFAVEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D99BE1E2163B370D0096AF6B /* FFAVEncoder.m */; };
-		D9D011C5163898F7007F62B1 /* ffmpeg in Resources */ = {isa = PBXBuildFile; fileRef = D9D01170163898F7007F62B1 /* ffmpeg */; };
-		D9D011C6163898F7007F62B1 /* ffprobe in Resources */ = {isa = PBXBuildFile; fileRef = D9D01171163898F7007F62B1 /* ffprobe */; };
-		D9D011C7163898F7007F62B1 /* ffserver in Resources */ = {isa = PBXBuildFile; fileRef = D9D01172163898F7007F62B1 /* ffserver */; };
 		D9D011C8163898F7007F62B1 /* libavcodec.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D011C0163898F7007F62B1 /* libavcodec.a */; };
 		D9D011C9163898F7007F62B1 /* libavdevice.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D011C1163898F7007F62B1 /* libavdevice.a */; };
 		D9D011CA163898F7007F62B1 /* libavformat.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D9D011C2163898F7007F62B1 /* libavformat.a */; };
@@ -507,9 +504,6 @@
 				AFC35FDD13FEFC0A0043EAD6 /* passThrough.vsh in Resources */,
 				AF2A5C021434ED1F007EF597 /* MainWindow.xib in Resources */,
 				AF2A5C031434ED1F007EF597 /* RosyWriterViewController.xib in Resources */,
-				D9D011C5163898F7007F62B1 /* ffmpeg in Resources */,
-				D9D011C6163898F7007F62B1 /* ffprobe in Resources */,
-				D9D011C7163898F7007F62B1 /* ffserver in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
