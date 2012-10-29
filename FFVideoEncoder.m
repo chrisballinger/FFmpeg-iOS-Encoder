@@ -165,10 +165,21 @@
     CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
     CVPixelBufferLockBaseAddress( pixelBuffer, 0 );
     
-	int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
-	int bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
-	unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
+	int bufferWidth = 0;
+	int bufferHeight = 0;
+	uint8_t *pixel = NULL;
     
+    if (CVPixelBufferIsPlanar(pixelBuffer)) {
+        //int planeCount = CVPixelBufferGetPlaneCount(pixelBuffer);
+        int basePlane = 0;
+        pixel = (uint8_t *)CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, basePlane);
+        bufferHeight = CVPixelBufferGetHeightOfPlane(pixelBuffer, basePlane);
+        bufferWidth = CVPixelBufferGetWidthOfPlane(pixelBuffer, basePlane);
+    } else {
+        pixel = (uint8_t *)CVPixelBufferGetBaseAddress(pixelBuffer);
+        bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
+        bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
+    }
     
     av_init_packet(&pkt);
     pkt.data = NULL;    // packet data will be allocated by the encoder
