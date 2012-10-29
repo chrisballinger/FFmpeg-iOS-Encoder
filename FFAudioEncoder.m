@@ -171,6 +171,27 @@ static int select_channel_layout(AVCodec *codec)
     [super setupEncoderWithFormatDescription:newFormatDescription];
 }
 - (void) finishEncoding {
+    // Copy buffer's bytes into samples
+    av_init_packet(&pkt);
+    pkt.data = NULL; // packet data will be allocated by the encoder
+    pkt.size = 0;
+    int samplesIndex = 0;
+    for (; samplesIndex < bytesInBuffer; samplesIndex++) {
+        samples[samplesIndex] = buffer[samplesIndex];
+    }
+    for (; samplesIndex < buffer_size; samplesIndex++) {
+        samples[samplesIndex] = 0;
+    }
+    ret = avcodec_encode_audio2(c, &pkt, frame, &got_output);
+    if (ret < 0) {
+        fprintf(stderr, "Error encoding audio frame\n");
+        exit(1);
+    }
+    if (got_output) {
+        fwrite(pkt.data, 1, pkt.size, f);
+        av_free_packet(&pkt);
+    }
+    
     /* get the delayed frames */
     int i = 0;
     for (got_output = 1; got_output; i++) {
@@ -194,6 +215,7 @@ static int select_channel_layout(AVCodec *codec)
     currentASBD = NULL;
     free(buffer);
     buffer = NULL;
+    bytesInBuffer = 0;
     [super finishEncoding];
 }
 - (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer {
