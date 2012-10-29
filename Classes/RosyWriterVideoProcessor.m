@@ -66,27 +66,24 @@
 
 @property (readwrite, getter=isRecording) BOOL recording;
 
-@property (readwrite) AVCaptureVideoOrientation videoOrientation;
-
 @end
 
 @implementation RosyWriterVideoProcessor
 
 @synthesize delegate;
 @synthesize videoFrameRate, videoDimensions, videoType;
-@synthesize referenceOrientation;
 @synthesize videoOrientation;
 @synthesize recording;
 @synthesize movieURL;
 @synthesize segmentationTimer;
 @synthesize movieURLs;
 @synthesize ffEncoder;
+@synthesize appleEncoder;
 
 - (id) init
 {
     if (self = [super init]) {
         previousSecondTimestamps = [[NSMutableArray alloc] init];
-        referenceOrientation = UIDeviceOrientationPortrait;
         self.movieURL = [self newMovieURL];
         self.movieURLs = [NSMutableArray array];
         [movieURLs addObject:movieURL];
@@ -102,6 +99,45 @@
     NSString *movieName = [NSString stringWithFormat:@"%f.mp4",[[NSDate date] timeIntervalSince1970]];
     NSURL *newMovieURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/%@", basePath, movieName]];
     return newMovieURL;
+}
+
+- (CGFloat)angleOffsetFromPortraitOrientationToOrientation:(AVCaptureVideoOrientation)orientation
+{
+	CGFloat angle = 0.0;
+	
+	switch (orientation) {
+		case AVCaptureVideoOrientationPortrait:
+			angle = 0.0;
+			break;
+		case AVCaptureVideoOrientationPortraitUpsideDown:
+			angle = M_PI;
+			break;
+		case AVCaptureVideoOrientationLandscapeRight:
+			angle = -M_PI_2;
+			break;
+		case AVCaptureVideoOrientationLandscapeLeft:
+			angle = M_PI_2;
+			break;
+		default:
+			break;
+	}
+    
+	return angle;
+}
+
+- (CGAffineTransform)transformFromCurrentVideoOrientationToOrientation:(AVCaptureVideoOrientation)orientation
+{
+	CGAffineTransform transform = CGAffineTransformIdentity;
+    
+	// Calculate offsets from an arbitrary reference orientation (portrait)
+	CGFloat orientationAngleOffset = [self angleOffsetFromPortraitOrientationToOrientation:orientation];
+	CGFloat videoOrientationAngleOffset = [self angleOffsetFromPortraitOrientationToOrientation:self.videoOrientation];
+	
+	// Find the difference in angle between the passed in orientation and the current video orientation
+	CGFloat angleOffset = orientationAngleOffset - videoOrientationAngleOffset;
+	transform = CGAffineTransformMakeRotation(angleOffset);
+	
+	return transform;
 }
 
 #pragma mark Utilities
@@ -132,175 +168,15 @@
     }
 }
 
-- (CGFloat)angleOffsetFromPortraitOrientationToOrientation:(AVCaptureVideoOrientation)orientation
-{
-	CGFloat angle = 0.0;
-	
-	switch (orientation) {
-		case AVCaptureVideoOrientationPortrait:
-			angle = 0.0;
-			break;
-		case AVCaptureVideoOrientationPortraitUpsideDown:
-			angle = M_PI;
-			break;
-		case AVCaptureVideoOrientationLandscapeRight:
-			angle = -M_PI_2;
-			break;
-		case AVCaptureVideoOrientationLandscapeLeft:
-			angle = M_PI_2;
-			break;
-		default:
-			break;
-	}
 
-	return angle;
-}
-
-- (CGAffineTransform)transformFromCurrentVideoOrientationToOrientation:(AVCaptureVideoOrientation)orientation
-{
-	CGAffineTransform transform = CGAffineTransformIdentity;
-
-	// Calculate offsets from an arbitrary reference orientation (portrait)
-	CGFloat orientationAngleOffset = [self angleOffsetFromPortraitOrientationToOrientation:orientation];
-	CGFloat videoOrientationAngleOffset = [self angleOffsetFromPortraitOrientationToOrientation:self.videoOrientation];
-	
-	// Find the difference in angle between the passed in orientation and the current video orientation
-	CGFloat angleOffset = orientationAngleOffset - videoOrientationAngleOffset;
-	transform = CGAffineTransformMakeRotation(angleOffset);
-	
-	return transform;
-}
 
 #pragma mark Recording
 
-- (void) writeSampleBuffer:(CMSampleBufferRef)sampleBuffer ofType:(NSString *)mediaType toAssetWriter:(AVAssetWriter*)assetWriter
-{
-	if ( assetWriter.status == AVAssetWriterStatusUnknown ) {
-		
-        if ([assetWriter startWriting]) {			
-			[assetWriter startSessionAtSourceTime:CMSampleBufferGetPresentationTimeStamp(sampleBuffer)];
-		}
-		else {
-			[self showError:[assetWriter error]];
-		}
-	}
-	
-	if ( assetWriter.status == AVAssetWriterStatusWriting ) {
-		
-		if (mediaType == AVMediaTypeVideo) {
-			if (assetWriterVideoIn.readyForMoreMediaData) {
-				if (![assetWriterVideoIn appendSampleBuffer:sampleBuffer]) {
-					[self showError:[assetWriter error]];
-				}
-			}
-		}
-		else if (mediaType == AVMediaTypeAudio) {
-			if (assetWriterAudioIn.readyForMoreMediaData) {
-				if (![assetWriterAudioIn appendSampleBuffer:sampleBuffer]) {
-					[self showError:[assetWriter error]];
-				}
-			}
-		}
-	}
-}
-
-- (BOOL) setupAudioAssetWriter:(AVAssetWriter*)assetWriter audioInput:(CMFormatDescriptionRef)currentFormatDescription
-{
-    audioFormatDescription = currentFormatDescription;
-    return [self setupAudioAssetWriter:assetWriter];
-}
-
-- (BOOL) setupAudioAssetWriter:(AVAssetWriter*)assetWriter
-{
-	const AudioStreamBasicDescription *currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(audioFormatDescription);
-
-	size_t aclSize = 0;
-	const AudioChannelLayout *currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(audioFormatDescription, &aclSize);
-	NSData *currentChannelLayoutData = nil;
-	
-	// AVChannelLayoutKey must be specified, but if we don't know any better give an empty data and let AVAssetWriter decide.
-	if ( currentChannelLayout && aclSize > 0 )
-		currentChannelLayoutData = [NSData dataWithBytes:currentChannelLayout length:aclSize];
-	else
-		currentChannelLayoutData = [NSData data];
-	
-	NSDictionary *audioCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-											  [NSNumber numberWithInteger:kAudioFormatMPEG4AAC], AVFormatIDKey,
-											  [NSNumber numberWithFloat:currentASBD->mSampleRate], AVSampleRateKey,
-											  [NSNumber numberWithInt:64000], AVEncoderBitRatePerChannelKey,
-											  [NSNumber numberWithInteger:currentASBD->mChannelsPerFrame], AVNumberOfChannelsKey,
-											  currentChannelLayoutData, AVChannelLayoutKey,
-											  nil];
-	if ([assetWriter canApplyOutputSettings:audioCompressionSettings forMediaType:AVMediaTypeAudio]) {
-		assetWriterAudioIn = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSettings];
-		assetWriterAudioIn.expectsMediaDataInRealTime = YES;
-		if ([assetWriter canAddInput:assetWriterAudioIn])
-			[assetWriter addInput:assetWriterAudioIn];
-		else {
-			NSLog(@"Couldn't add asset writer audio input.");
-            return NO;
-		}
-	}
-	else {
-		NSLog(@"Couldn't apply audio output settings.");
-        return NO;
-	}
-    
-    return YES;
-}
-
-- (BOOL) setupVideoAssetWriter:(AVAssetWriter*)assetWriter videoInput:(CMFormatDescriptionRef)currentFormatDescription
-{
-    videoFormatDescription = currentFormatDescription;
-    return [self setupVideoAssetWriter:assetWriter];
-}
 
 
 
-- (BOOL) setupVideoAssetWriter:(AVAssetWriter*)assetWriter
-{
-	float bitsPerPixel;
-	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(videoFormatDescription);
-    CGFloat width = dimensions.width;
-    CGFloat height = dimensions.height;
-	int numPixels = width * height;
-	int bitsPerSecond;
-	
-	// Assume that lower-than-SD resolutions are intended for streaming, and use a lower bitrate
-	if ( numPixels < (640 * 480) )
-		bitsPerPixel = 4.05; // This bitrate matches the quality produced by AVCaptureSessionPresetMedium or Low.
-	else
-		bitsPerPixel = 11.4; // This bitrate matches the quality produced by AVCaptureSessionPresetHigh.
-	
-	bitsPerSecond = numPixels * bitsPerPixel;
-	
-	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-											  AVVideoCodecH264, AVVideoCodecKey,
-											  [NSNumber numberWithInteger:width], AVVideoWidthKey,
-											  [NSNumber numberWithInteger:height], AVVideoHeightKey,
-											  [NSDictionary dictionaryWithObjectsAndKeys:
-											   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
-											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
-											   nil], AVVideoCompressionPropertiesKey,
-											  nil];
-	if ([assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
-		assetWriterVideoIn = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
-		assetWriterVideoIn.expectsMediaDataInRealTime = YES;
-		assetWriterVideoIn.transform = [self transformFromCurrentVideoOrientationToOrientation:self.referenceOrientation];
-		if ([assetWriter canAddInput:assetWriterVideoIn])
-			[assetWriter addInput:assetWriterVideoIn];
-		else {
-			NSLog(@"Couldn't add asset writer video input.");
-            return NO;
-		}
-	}
-	else {
-		NSLog(@"Couldn't apply video output settings.");
-        return NO;
-	}
-    
-    return YES;
-}
+
+
 
 - (void) startRecording
 {
@@ -324,10 +200,7 @@
 
 - (void) initializeAssetWriters {
     // Create an asset writer
-    NSError *error;
-    recordingAssetWriter = [[AVAssetWriter alloc] initWithURL:movieURL fileType:(NSString *)kUTTypeMPEG4 error:&error];
-    if (error)
-        [self showError:error];
+    self.appleEncoder = [[AVAppleEncoder alloc] initWithURL:movieURL];
 }
 
 - (void) stopRecording
@@ -337,30 +210,20 @@
         [self.ffEncoder.audioEncoder finishEncoding];
     });
 	dispatch_async(movieWritingQueue, ^{
-		AVAssetWriter *assetWriter = recordingAssetWriter;
-		if ( recordingWillBeStopped || (self.recording == NO) || !assetWriter)
+		if ( recordingWillBeStopped || self.recording == NO)
 			return;
 		
 		recordingWillBeStopped = YES;
 		
 		// recordingDidStop is called from saveMovieToCameraRoll
 		[self.delegate recordingWillStop];
-        
-		if ([assetWriter finishWriting]) {			
-			readyToRecordVideo = NO;
-			readyToRecordAudio = NO;
-			
-            recordingWillBeStopped = NO;
-            self.recording = NO;
-            [self.delegate recordingDidStop];
-            [self clearMovieURLs];
-            self.movieURL = [self newMovieURL];
-            [self initializeAssetWriters];
-		}
-		else {
-			[self showError:[assetWriter error]];
-		}
-        
+        [appleEncoder finishEncoding];
+        recordingWillBeStopped = NO;
+        self.recording = NO;
+        [self.delegate recordingDidStop];
+        [self clearMovieURLs];
+        self.movieURL = [self newMovieURL];
+        [self initializeAssetWriters];
 	});
     [self.segmentationTimer invalidate];
     self.segmentationTimer = nil;
@@ -464,35 +327,35 @@
     });
     
 	dispatch_async(movieWritingQueue, ^{
-		if ( recordingAssetWriter && (self.recording || recordingWillBeStarted)) {
+		if ( appleEncoder && (self.recording || recordingWillBeStarted)) {
 		
-			BOOL wasReadyToRecord = (readyToRecordAudio && readyToRecordVideo);
+			BOOL wasReadyToRecord = (appleEncoder.readyToRecordAudio && appleEncoder.readyToRecordVideo);
 			
 			if (connection == videoConnection) {
 				
 				// Initialize the video input if this is not done yet
-				if (!readyToRecordVideo) {
-					readyToRecordVideo = [self setupVideoAssetWriter:recordingAssetWriter videoInput:formatDescription];
+				if (!appleEncoder.readyToRecordVideo) {
+					[appleEncoder setupVideoEncoderWithFormatDescription:formatDescription];
                 }
 				
 				// Write video data to file
-				if (readyToRecordVideo && readyToRecordAudio) {
-					[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo toAssetWriter:recordingAssetWriter];
+				if (appleEncoder.readyToRecordVideo && appleEncoder.readyToRecordAudio) {
+					[appleEncoder writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo];
                 }
 			}
 			else if (connection == audioConnection) {
 				
 				// Initialize the audio input if this is not done yet
-				if (!readyToRecordAudio) {
-                    readyToRecordAudio = [self setupAudioAssetWriter:recordingAssetWriter audioInput:formatDescription];
+				if (!appleEncoder.readyToRecordAudio) {
+                    [appleEncoder setupAudioEncoderWithFormatDescription:formatDescription];
                 }
 				
 				// Write audio data to file
-				if (readyToRecordAudio && readyToRecordVideo)
-					[self writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio toAssetWriter:recordingAssetWriter];
+				if (appleEncoder.readyToRecordAudio && appleEncoder.readyToRecordVideo)
+					[appleEncoder writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio];
 			}
 			
-			BOOL isReadyToRecord = (readyToRecordAudio && readyToRecordVideo);
+			BOOL isReadyToRecord = (appleEncoder.readyToRecordAudio && appleEncoder.readyToRecordVideo);
 			if ( !wasReadyToRecord && isReadyToRecord ) {
 				recordingWillBeStarted = NO;
 				self.recording = YES;

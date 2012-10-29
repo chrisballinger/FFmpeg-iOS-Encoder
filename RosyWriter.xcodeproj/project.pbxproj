@@ -28,6 +28,8 @@
 		AFC35FDD13FEFC0A0043EAD6 /* passThrough.vsh in Resources */ = {isa = PBXBuildFile; fileRef = AFC35FDB13FEFC0A0043EAD6 /* passThrough.vsh */; };
 		AFC35FE813FF35900043EAD6 /* RosyWriterVideoProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = AFC35FE713FF35900043EAD6 /* RosyWriterVideoProcessor.m */; };
 		D91D28B0163F3014008EBFDB /* libvpx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D91D28AF163F3014008EBFDB /* libvpx.a */; };
+		D91D28B7163F40A4008EBFDB /* AVEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D91D28B6163F40A4008EBFDB /* AVEncoder.m */; };
+		D91D28BB163F42EA008EBFDB /* AVAppleEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D91D28BA163F42EA008EBFDB /* AVAppleEncoder.m */; };
 		D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658221639DBA100F1BF7C /* FFVideoEncoder.m */; };
 		D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658271639E7BA00F1BF7C /* FFEncoder.m */; };
 		D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D966582A1639E88800F1BF7C /* FFAudioEncoder.m */; };
@@ -70,6 +72,10 @@
 		AFC35FE613FF35900043EAD6 /* RosyWriterVideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RosyWriterVideoProcessor.h; path = Classes/RosyWriterVideoProcessor.h; sourceTree = "<group>"; };
 		AFC35FE713FF35900043EAD6 /* RosyWriterVideoProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RosyWriterVideoProcessor.m; path = Classes/RosyWriterVideoProcessor.m; sourceTree = "<group>"; };
 		D91D28AF163F3014008EBFDB /* libvpx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvpx.a; sourceTree = "<group>"; };
+		D91D28B5163F40A4008EBFDB /* AVEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVEncoder.h; sourceTree = "<group>"; };
+		D91D28B6163F40A4008EBFDB /* AVEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVEncoder.m; sourceTree = "<group>"; };
+		D91D28B9163F42EA008EBFDB /* AVAppleEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAppleEncoder.h; sourceTree = "<group>"; };
+		D91D28BA163F42EA008EBFDB /* AVAppleEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAppleEncoder.m; sourceTree = "<group>"; };
 		D96658211639DBA100F1BF7C /* FFVideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFVideoEncoder.h; sourceTree = "<group>"; };
 		D96658221639DBA100F1BF7C /* FFVideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFVideoEncoder.m; sourceTree = "<group>"; };
 		D96658261639E7BA00F1BF7C /* FFEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFEncoder.h; sourceTree = "<group>"; };
@@ -280,6 +286,10 @@
 				D966582A1639E88800F1BF7C /* FFAudioEncoder.m */,
 				D99BE1E1163B370D0096AF6B /* FFAVEncoder.h */,
 				D99BE1E2163B370D0096AF6B /* FFAVEncoder.m */,
+				D91D28B5163F40A4008EBFDB /* AVEncoder.h */,
+				D91D28B6163F40A4008EBFDB /* AVEncoder.m */,
+				D91D28B9163F42EA008EBFDB /* AVAppleEncoder.h */,
+				D91D28BA163F42EA008EBFDB /* AVAppleEncoder.m */,
 				D96658261639E7BA00F1BF7C /* FFEncoder.h */,
 				D96658271639E7BA00F1BF7C /* FFEncoder.m */,
 			);
@@ -528,6 +538,8 @@
 				D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */,
 				D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */,
 				D99BE1E3163B370D0096AF6B /* FFAVEncoder.m in Sources */,
+				D91D28B7163F40A4008EBFDB /* AVEncoder.m in Sources */,
+				D91D28BB163F42EA008EBFDB /* AVAppleEncoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

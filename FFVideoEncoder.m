@@ -30,7 +30,7 @@
     outputSize = desiredOutputSize;
     c = NULL;
     frameNumber = 0;
-    int codec_id = AV_CODEC_ID_MPEG1VIDEO;
+    int codec_id = AV_CODEC_ID_MPEG4;
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
     NSString *movieName = [NSString stringWithFormat:@"%f.mpg",[[NSDate date] timeIntervalSince1970]];

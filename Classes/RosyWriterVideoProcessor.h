@@ -49,6 +49,7 @@
 #import <CoreMedia/CMBufferQueue.h>
 #include <math.h>
 #import "FFEncoder.h"
+#import "AVAppleEncoder.h"
 
 @protocol RosyWriterVideoProcessorDelegate;
 
@@ -67,28 +68,17 @@
 	CMBufferQueueRef previewBufferQueue;
     CMBufferQueueRef ffmpegBufferQueue;
 	
-	AVAssetWriter *recordingAssetWriter;
-    //AVAssetWriter *standbyAssetWriter;
-	AVAssetWriterInput *assetWriterAudioIn;
-	AVAssetWriterInput *assetWriterVideoIn;
 	dispatch_queue_t movieWritingQueue;
     dispatch_queue_t ffmpegWritingQueue;
-    
-	AVCaptureVideoOrientation referenceOrientation;
-	AVCaptureVideoOrientation videoOrientation;
     
     CMFormatDescriptionRef videoFormatDescription;
     CMFormatDescriptionRef audioFormatDescription;
     
 	// Only accessed on movie writing queue
-    BOOL readyToRecordAudio; 
-    BOOL readyToRecordVideo;
 	BOOL recordingWillBeStarted;
 	BOOL recordingWillBeStopped;
 
 	BOOL recording;
-    
-
 }
 
 @property (readwrite, weak) id <RosyWriterVideoProcessorDelegate> delegate;
@@ -100,10 +90,9 @@
 @property (nonatomic, strong) NSTimer *segmentationTimer;
 @property (nonatomic, strong) NSMutableArray *movieURLs;
 @property (nonatomic, strong) FFEncoder *ffEncoder;
-
-@property (readwrite) AVCaptureVideoOrientation referenceOrientation;
-
-- (CGAffineTransform)transformFromCurrentVideoOrientationToOrientation:(AVCaptureVideoOrientation)orientation;
+@property (nonatomic, strong) AVAppleEncoder *appleEncoder;
+@property (nonatomic) AVCaptureVideoOrientation referenceOrientation;
+@property (nonatomic) AVCaptureVideoOrientation videoOrientation;
 
 - (void) showError:(NSError*)error;
 
@@ -115,6 +104,8 @@
 
 - (void) pauseCaptureSession; // Pausing while a recording is in progress will cause the recording to be stopped and saved.
 - (void) resumeCaptureSession;
+
+- (CGAffineTransform)transformFromCurrentVideoOrientationToOrientation:(AVCaptureVideoOrientation)orientation;
 
 @property(readonly, getter=isRecording) BOOL recording;
 
