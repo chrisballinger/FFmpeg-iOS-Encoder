@@ -1,10 +1,7 @@
 #!/bin/bash
-#  Builds ffmpeg for all three current iPhone targets: iPhoneSimulator-i386,
-#  iPhoneOS-armv7, iPhoneOS-armv7s.
+#  Builds libvpx for iPhone targets: iPhoneSimulator-i386,
+#  iPhoneOS-armv7.
 #
-#  FFmpeg modifications by Chris Ballinger
-#  Copyright 2012 Chris Ballinger <chris@openwatch.net>
-#  
 #  Copyright 2012 Mike Tigas <mike@tig.as>
 #
 #  Based on work by Felix Schulze on 16.12.10.
@@ -23,9 +20,9 @@
 #  limitations under the License.
 #
 ###########################################################################
-#  Choose your ffmpeg version and your currently-installed iOS SDK version:
+#  Choose your libvpx version and your currently-installed iOS SDK version:
 #
-VERSION="1.0"
+VERSION="1.1.0"
 SDKVERSION="6.0"
 #
 #
@@ -67,15 +64,19 @@ cd $SRCDIR
 # Exit the script if an error happens
 set -e
 
-if [ ! -e "${SRCDIR}/ffmpeg-${VERSION}.tar.bz2" ]; then
-	echo "Downloading ffmpeg-${VERSION}.tar.bz2"
-    curl -LO http://ffmpeg.org/releases/ffmpeg-${VERSION}.tar.bz2
+if [ ! -e "${SRCDIR}/libvpx-v${VERSION}.tar.bz2" ]; then
+	echo "Downloading libvpx-v${VERSION}.tar.bz2"
+    curl -LO http://webm.googlecode.com/files/libvpx-v${VERSION}.tar.bz2
+
 else
-	echo "Using ffmpeg-${VERSION}.tar.bz2"
+	echo "Using libvpx-v${VERSION}.tar.bz2"
 fi
 
-tar zxf ffmpeg-${VERSION}.tar.bz2 -C $SRCDIR
-cd "${SRCDIR}/ffmpeg-${VERSION}"
+tar zxf libvpx-v${VERSION}.tar.bz2 -C $SRCDIR
+cd "${SRCDIR}/libvpx-v${VERSION}"
+
+patch -p3 < ../../../build-patches/libvpx-configure.sh.patch
+patch -p3 < ../../../build-patches/libvpx-gen_asm_deps.sh.patch
 
 set +e # don't bail out of bash script if ccache doesn't exist
 CCACHE=`which ccache`
@@ -93,28 +94,17 @@ do
 	if [ "${ARCH}" == "i386" ];
 	then
 		PLATFORM="iPhoneSimulator"
-        EXTRA_CONFIG="--arch=i386 --disable-asm"
-        EXTRA_CFLAGS="-arch i386"
-        EXTRA_LDFLAGS=""
+        EXTRA_CONFIG="--target=x86-darwin12-gcc"
 	else
 		PLATFORM="iPhoneOS"
-        EXTRA_CONFIG="--arch=arm --target-os=darwin --enable-cross-compile --cpu=cortex-a8 --disable-armv5te"
-        EXTRA_CFLAGS="-w -arch ${ARCH} -mfpu=neon"
-        EXTRA_LDFLAGS="-mfpu=neon"
+        EXTRA_CONFIG="--target=armv7-darwin-gcc"
 	fi
 
 	mkdir -p "${INTERDIR}/${PLATFORM}${SDKVERSION}-${ARCH}.sdk"
 
-	./configure --disable-shared --enable-static --enable-pic \
-    --disable-everything --enable-libvpx \
-    --enable-encoder=vp8 --enable-decoder=vp8 --enable-encoder=libvpx --enable-decoder=libvpx --enable-encoder=mpeg1video --enable-encoder=mp2 \
-    --enable-encoder=mpeg4 \
-    --cc=${CCACHE}${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/gcc ${EXTRA_CONFIG} \
+	./configure --disable-shared --enable-static --enable-pic ${EXTRA_CONFIG} \
     --prefix="${INTERDIR}/${PLATFORM}${SDKVERSION}-${ARCH}.sdk" \
-    --sysroot=${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk \
-    --extra-ldflags="-arch ${ARCH} ${EXTRA_LDFLAGS} -L${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk/usr/lib/system -isysroot=${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk $LDFLAGS -L${OUTPUTDIR}/lib" \
-    --extra-cflags="$CFLAGS ${EXTRA_CFLAGS} -I${OUTPUTDIR}/include -isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk" \
-    --extra-cxxflags="$CPPFLAGS -I${OUTPUTDIR}/include -isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
+    --sdk-path="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer" \
 
     # Build the application and install it to the fake SDK intermediary dir
     # we have set up. Make sure to clean up afterward because we will re-use
@@ -128,8 +118,8 @@ done
 
 echo "Build library..."
 
-# These are the libs that comprise ffmpeg.
-OUTPUT_LIBS="libavcodec.a libavdevice.a libavformat.a libavutil.a libswscale.a"
+# These are the libs that comprise libvpx.
+OUTPUT_LIBS="libvpx.a"
 for OUTPUT_LIB in ${OUTPUT_LIBS}; do
     INPUT_LIBS=""
     for ARCH in ${ARCHS}; do
@@ -183,10 +173,11 @@ for ARCH in ${ARCHS}; do
     fi
 done
 
+
 ####################
 
 echo "Building done."
 echo "Cleaning up..."
 rm -fr ${INTERDIR}
-rm -fr "${SRCDIR}/ffmpeg-${VERSION}"
+rm -fr "${SRCDIR}/libvpx-v${VERSION}"
 echo "Done."

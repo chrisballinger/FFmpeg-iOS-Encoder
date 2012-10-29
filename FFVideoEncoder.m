@@ -140,7 +140,7 @@
         }
         
         if (got_output) {
-            printf("Write frame %3d (size=%5d)\n", frameNumber, pkt.size);
+            //printf("Write frame %3d (size=%5d)\n", frameNumber, pkt.size);
             fwrite(pkt.data, 1, pkt.size, f);
             av_free_packet(&pkt);
         }
@@ -201,9 +201,8 @@
     for (int y = 0; y < bufferHeight / 2; y++) {
         for (int x = 0; x < bufferWidth / 2; x++) {
             frame->data[1][y * frame->linesize[1] + x] = pixel[0];
-            pixel++;
-            frame->data[2][y * frame->linesize[2] + x] = pixel[0];
-            pixel++;
+            frame->data[2][y * frame->linesize[2] + x] = pixel[1];
+            pixel+=2;
         }
     }
     
@@ -221,7 +220,7 @@
     }
     
     if (got_output) {
-        printf("Write frame %3d (size=%5d)\n", frameNumber, pkt.size);
+        //printf("Write frame %3d (size=%5d)\n", frameNumber, pkt.size);
         fwrite(pkt.data, 1, pkt.size, f);
         av_free_packet(&pkt);
     }

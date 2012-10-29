@@ -1,0 +1,11 @@
+--- build/src/libvpx-v1.1.0/build/make/configure.sh.orig	2012-05-08 16:14:00.000000000 -0700
++++ build/src/libvpx-v1.1.0/build/make/configure.sh	2012-10-29 13:40:35.000000000 -0700
+@@ -844,7 +844,7 @@
+             add_ldflags -arch_only ${tgt_isa}
+ 
+             if [ -z "${alt_libc}" ]; then
+-                alt_libc=${SDK_PATH}/SDKs/iPhoneOS5.1.sdk
++                alt_libc=${SDK_PATH}/SDKs/iPhoneOS6.0.sdk
+             fi
+ 
+             add_cflags  "-isysroot ${alt_libc}"

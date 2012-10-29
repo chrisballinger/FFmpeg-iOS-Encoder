@@ -27,6 +27,7 @@
 		AFC35FDC13FEFC0A0043EAD6 /* passThrough.fsh in Resources */ = {isa = PBXBuildFile; fileRef = AFC35FDA13FEFC0A0043EAD6 /* passThrough.fsh */; };
 		AFC35FDD13FEFC0A0043EAD6 /* passThrough.vsh in Resources */ = {isa = PBXBuildFile; fileRef = AFC35FDB13FEFC0A0043EAD6 /* passThrough.vsh */; };
 		AFC35FE813FF35900043EAD6 /* RosyWriterVideoProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = AFC35FE713FF35900043EAD6 /* RosyWriterVideoProcessor.m */; };
+		D91D28B0163F3014008EBFDB /* libvpx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D91D28AF163F3014008EBFDB /* libvpx.a */; };
 		D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658221639DBA100F1BF7C /* FFVideoEncoder.m */; };
 		D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658271639E7BA00F1BF7C /* FFEncoder.m */; };
 		D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D966582A1639E88800F1BF7C /* FFAudioEncoder.m */; };
@@ -68,6 +69,7 @@
 		AFC35FDB13FEFC0A0043EAD6 /* passThrough.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = passThrough.vsh; sourceTree = "<group>"; };
 		AFC35FE613FF35900043EAD6 /* RosyWriterVideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RosyWriterVideoProcessor.h; path = Classes/RosyWriterVideoProcessor.h; sourceTree = "<group>"; };
 		AFC35FE713FF35900043EAD6 /* RosyWriterVideoProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RosyWriterVideoProcessor.m; path = Classes/RosyWriterVideoProcessor.m; sourceTree = "<group>"; };
+		D91D28AF163F3014008EBFDB /* libvpx.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libvpx.a; sourceTree = "<group>"; };
 		D96658211639DBA100F1BF7C /* FFVideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFVideoEncoder.h; sourceTree = "<group>"; };
 		D96658221639DBA100F1BF7C /* FFVideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFVideoEncoder.m; sourceTree = "<group>"; };
 		D96658261639E7BA00F1BF7C /* FFEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFEncoder.h; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 				D9D011CA163898F7007F62B1 /* libavformat.a in Frameworks */,
 				D9D011CB163898F7007F62B1 /* libavutil.a in Frameworks */,
 				D9D011CC163898F7007F62B1 /* libswscale.a in Frameworks */,
+				D91D28B0163F3014008EBFDB /* libvpx.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -443,6 +446,7 @@
 				D9D011C2163898F7007F62B1 /* libavformat.a */,
 				D9D011C3163898F7007F62B1 /* libavutil.a */,
 				D9D011C4163898F7007F62B1 /* libswscale.a */,
+				D91D28AF163F3014008EBFDB /* libvpx.a */,
 			);
 			path = lib;
 			sourceTree = "<group>";
@@ -553,6 +557,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = armv7;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -567,6 +572,7 @@
 					"\"$(SRCROOT)/ffmpeg-iOS/dependencies/lib\"",
 				);
 				PRODUCT_NAME = RosyWriter;
+				VALID_ARCHS = armv7;
 			};
 			name = Debug;
 		};
@@ -574,6 +580,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = armv7;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -587,6 +594,7 @@
 				);
 				PRODUCT_NAME = RosyWriter;
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = armv7;
 			};
 			name = Release;
 		};
