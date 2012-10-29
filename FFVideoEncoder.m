@@ -13,13 +13,21 @@
 #include <libavutil/imgutils.h>
 #include <libavutil/mathematics.h>
 #include <libavutil/samplefmt.h>
+#include <libswscale/swscale.h>
 
 
 @implementation FFVideoEncoder
 
 - (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription {
-    CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(newFormatDescription);
-    
+    CMVideoDimensions dimensions;
+    dimensions.width = 320;
+    dimensions.height = 240;
+    [self setupEncoderWithFormatDescription:newFormatDescription desiredOutputSize:dimensions];
+}
+
+- (void) setupEncoderWithFormatDescription:(CMFormatDescriptionRef)newFormatDescription desiredOutputSize:(CMVideoDimensions)desiredOutputSize {
+    inputSize = CMVideoFormatDescriptionGetDimensions(newFormatDescription);
+    outputSize = desiredOutputSize;
     c = NULL;
     frameNumber = 0;
     int codec_id = AV_CODEC_ID_MPEG1VIDEO;
@@ -41,8 +49,8 @@
     /* put sample parameters */
     c->bit_rate = 400000;
     /* resolution must be a multiple of two */
-    c->width = dimensions.width;
-    c->height = dimensions.height;
+    c->width = outputSize.width;
+    c->height = outputSize.height;
     /* frames per second */
     c->time_base= (AVRational){1,25};
     c->gop_size = 10; /* emit one intra frame every ten frames */
@@ -70,12 +78,42 @@
         exit(1);
     }
     frame->format = c->pix_fmt;
-    frame->width  = c->width;
-    frame->height = c->height;
+    frame->width  = inputSize.width;
+    frame->height = inputSize.height;
+    
+    scaledFrame = avcodec_alloc_frame();
+    if (!scaledFrame) {
+        fprintf(stderr, "Could not allocate video frame\n");
+        exit(1);
+    }
+    scaledFrame->format = c->pix_fmt;
+    scaledFrame->width  = c->width;
+    scaledFrame->height = c->height;
+    
+    /* create scaling context */
+    sws_ctx = sws_getContext(inputSize.width, inputSize.height, PIX_FMT_YUV420P, outputSize.width, outputSize.height, PIX_FMT_YUV420P, SWS_BILINEAR, NULL, NULL, NULL);
+    if (!sws_ctx) {
+        fprintf(stderr,
+                "Impossible to create scale context for the conversion "
+                "fmt:%s s:%dx%d -> fmt:%s s:%dx%d\n",
+                av_get_pix_fmt_name(PIX_FMT_YUV420P), inputSize.width, inputSize.height,
+                av_get_pix_fmt_name(PIX_FMT_YUV420P), outputSize.width, outputSize.height);
+        ret = AVERROR(EINVAL);
+        exit(1);
+    }
     
     /* the image can be allocated by any means and av_image_alloc() is
      * just the most convenient way if av_malloc() is to be used */
-    ret = av_image_alloc(frame->data, frame->linesize, c->width, c->height,
+    ret = av_image_alloc(frame->data, frame->linesize, inputSize.width, inputSize.height,
+                         c->pix_fmt, 32);
+    if (ret < 0) {
+        fprintf(stderr, "Could not allocate raw picture buffer\n");
+        exit(1);
+    }
+    
+    /* the image can be allocated by any means and av_image_alloc() is
+     * just the most convenient way if av_malloc() is to be used */
+    ret = av_image_alloc(scaledFrame->data, scaledFrame->linesize, c->width, c->height,
                          c->pix_fmt, 32);
     if (ret < 0) {
         fprintf(stderr, "Could not allocate raw picture buffer\n");
@@ -83,6 +121,10 @@
     }
     
     [super setupEncoderWithFormatDescription:newFormatDescription];
+}
+
+- (void) scaleVideoToOutputSize {
+    
 }
 
 - (void) finishEncoding {
@@ -111,7 +153,10 @@
     avcodec_close(c);
     av_free(c);
     av_freep(&frame->data[0]);
+    av_freep(&scaledFrame->data[0]);
     avcodec_free_frame(&frame);
+    avcodec_free_frame(&scaledFrame);
+    sws_freeContext(sws_ctx);
     printf("\n");
     [super finishEncoding];
 }
@@ -123,6 +168,7 @@
 	int bufferWidth = CVPixelBufferGetWidth(pixelBuffer);
 	int bufferHeight = CVPixelBufferGetHeight(pixelBuffer);
 	unsigned char *pixel = (unsigned char *)CVPixelBufferGetBaseAddress(pixelBuffer);
+    
     
     av_init_packet(&pkt);
     pkt.data = NULL;    // packet data will be allocated by the encoder
@@ -150,10 +196,14 @@
         }
     }
     
-    frame->pts = frameNumber;
+    /* convert to destination format */
+    sws_scale(sws_ctx, (const uint8_t * const*)frame->data,
+              frame->linesize, 0, inputSize.height, scaledFrame->data, scaledFrame->linesize);
+    
+    scaledFrame->pts = frameNumber;
     
     /* encode the image */
-    ret = avcodec_encode_video2(c, &pkt, frame, &got_output);
+    ret = avcodec_encode_video2(c, &pkt, scaledFrame, &got_output);
     if (ret < 0) {
         fprintf(stderr, "Error encoding frame\n");
         exit(1);
