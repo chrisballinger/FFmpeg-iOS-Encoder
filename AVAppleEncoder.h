@@ -28,6 +28,8 @@
 - (void) writeSampleBuffer:(CMSampleBufferRef)sampleBuffer ofType:(NSString *)mediaType;
 - (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
+- (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
+
 - (void) finishEncoding;
 
 @end

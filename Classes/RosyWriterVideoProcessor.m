@@ -78,7 +78,7 @@
 @synthesize segmentationTimer;
 @synthesize movieURLs;
 @synthesize ffEncoder;
-@synthesize appleEncoder;
+@synthesize appleEncoder1, appleEncoder2;
 
 - (id) init
 {
@@ -200,15 +200,18 @@
 
 - (void) initializeAssetWriters {
     // Create an asset writer
-    self.appleEncoder = [[AVAppleEncoder alloc] initWithURL:movieURL];
+    self.appleEncoder1 = [[AVAppleEncoder alloc] initWithURL:[self newMovieURL]];
+    self.appleEncoder2 = [[AVAppleEncoder alloc] initWithURL:[self newMovieURL]];
 }
 
 - (void) stopRecording
 {
+    /*
     dispatch_async(ffmpegWritingQueue, ^{
         [self.ffEncoder.videoEncoder finishEncoding];
         [self.ffEncoder.audioEncoder finishEncoding];
     });
+     */
 	dispatch_async(movieWritingQueue, ^{
 		if ( recordingWillBeStopped || self.recording == NO)
 			return;
@@ -217,7 +220,8 @@
 		
 		// recordingDidStop is called from saveMovieToCameraRoll
 		[self.delegate recordingWillStop];
-        [appleEncoder finishEncoding];
+        [appleEncoder1 finishEncoding];
+        [appleEncoder2 finishEncoding];
         recordingWillBeStopped = NO;
         self.recording = NO;
         [self.delegate recordingDidStop];
@@ -295,10 +299,10 @@
 	}
     //
     CFRetain(sampleBuffer);
-    CFRetain(sampleBuffer);
+    //CFRetain(sampleBuffer);
 	CFRetain(formatDescription);
-    CFRetain(formatDescription);
-    
+    //CFRetain(formatDescription);
+    /*
     dispatch_async(ffmpegWritingQueue, ^{
         if (self.recording || recordingWillBeStarted) {
             if (connection == videoConnection) {
@@ -325,37 +329,73 @@
         CFRelease(sampleBuffer);
         CFRelease(formatDescription);
     });
+     */
     
 	dispatch_async(movieWritingQueue, ^{
-		if ( appleEncoder && (self.recording || recordingWillBeStarted)) {
+		if ( appleEncoder1 && (self.recording || recordingWillBeStarted)) {
 		
-			BOOL wasReadyToRecord = (appleEncoder.readyToRecordAudio && appleEncoder.readyToRecordVideo);
+			BOOL wasReadyToRecord = (appleEncoder1.readyToRecordAudio && appleEncoder1.readyToRecordVideo);
 			
 			if (connection == videoConnection) {
 				
 				// Initialize the video input if this is not done yet
-				if (!appleEncoder.readyToRecordVideo) {
-					[appleEncoder setupVideoEncoderWithFormatDescription:formatDescription];
+				if (!appleEncoder1.readyToRecordVideo) {
+					[appleEncoder1 setupVideoEncoderWithFormatDescription:formatDescription];
                 }
 				
 				// Write video data to file
-				if (appleEncoder.readyToRecordVideo && appleEncoder.readyToRecordAudio) {
-					[appleEncoder writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo];
+				if (appleEncoder1.readyToRecordVideo && appleEncoder1.readyToRecordAudio) {
+					[appleEncoder1 writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo];
                 }
 			}
 			else if (connection == audioConnection) {
 				
 				// Initialize the audio input if this is not done yet
-				if (!appleEncoder.readyToRecordAudio) {
-                    [appleEncoder setupAudioEncoderWithFormatDescription:formatDescription];
+				if (!appleEncoder1.readyToRecordAudio) {
+                    [appleEncoder1 setupAudioEncoderWithFormatDescription:formatDescription];
                 }
 				
 				// Write audio data to file
-				if (appleEncoder.readyToRecordAudio && appleEncoder.readyToRecordVideo)
-					[appleEncoder writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio];
+				if (appleEncoder1.readyToRecordAudio && appleEncoder1.readyToRecordVideo)
+					[appleEncoder1 writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio];
 			}
 			
-			BOOL isReadyToRecord = (appleEncoder.readyToRecordAudio && appleEncoder.readyToRecordVideo);
+			BOOL isReadyToRecord = (appleEncoder1.readyToRecordAudio && appleEncoder1.readyToRecordVideo);
+			if ( !wasReadyToRecord && isReadyToRecord ) {
+				recordingWillBeStarted = NO;
+				self.recording = YES;
+				[self.delegate recordingDidStart];
+			}
+		}
+        if ( appleEncoder2 && (self.recording || recordingWillBeStarted)) {
+            
+			BOOL wasReadyToRecord = (appleEncoder2.readyToRecordAudio && appleEncoder2.readyToRecordVideo);
+			
+			if (connection == videoConnection) {
+				
+				// Initialize the video input if this is not done yet
+				if (!appleEncoder2.readyToRecordVideo) {
+					[appleEncoder2 setupVideoEncoderWithFormatDescription:formatDescription bitsPerSecond:1244160];
+                }
+				
+				// Write video data to file
+				if (appleEncoder2.readyToRecordVideo && appleEncoder2.readyToRecordAudio) {
+					[appleEncoder2 writeSampleBuffer:sampleBuffer ofType:AVMediaTypeVideo];
+                }
+			}
+			else if (connection == audioConnection) {
+				
+				// Initialize the audio input if this is not done yet
+				if (!appleEncoder2.readyToRecordAudio) {
+                    [appleEncoder2 setupAudioEncoderWithFormatDescription:formatDescription];
+                }
+				
+				// Write audio data to file
+				if (appleEncoder2.readyToRecordAudio && appleEncoder2.readyToRecordVideo)
+					[appleEncoder2 writeSampleBuffer:sampleBuffer ofType:AVMediaTypeAudio];
+			}
+			
+			BOOL isReadyToRecord = (appleEncoder2.readyToRecordAudio && appleEncoder2.readyToRecordVideo);
 			if ( !wasReadyToRecord && isReadyToRecord ) {
 				recordingWillBeStarted = NO;
 				self.recording = YES;
@@ -365,6 +405,7 @@
 		CFRelease(sampleBuffer);
 		CFRelease(formatDescription);
 	});
+    
 }
 
 - (AVCaptureDevice *)videoDeviceWithPosition:(AVCaptureDevicePosition)position 

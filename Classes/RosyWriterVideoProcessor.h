@@ -90,7 +90,8 @@
 @property (nonatomic, strong) NSTimer *segmentationTimer;
 @property (nonatomic, strong) NSMutableArray *movieURLs;
 @property (nonatomic, strong) FFEncoder *ffEncoder;
-@property (nonatomic, strong) AVAppleEncoder *appleEncoder;
+@property (nonatomic, strong) AVAppleEncoder *appleEncoder1;
+@property (nonatomic, strong) AVAppleEncoder *appleEncoder2;
 @property (nonatomic) AVCaptureVideoOrientation referenceOrientation;
 @property (nonatomic) AVCaptureVideoOrientation videoOrientation;
 

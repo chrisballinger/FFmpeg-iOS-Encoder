@@ -30,29 +30,19 @@
     return self;
 }
 
-- (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
-{
-	float bitsPerPixel;
+- (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
+    
 	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
     CGFloat width = dimensions.width;
     CGFloat height = dimensions.height;
-	int numPixels = width * height;
-	int bitsPerSecond;
-	
-	// Assume that lower-than-SD resolutions are intended for streaming, and use a lower bitrate
-	if ( numPixels < (640 * 480) )
-		bitsPerPixel = 4.05; // This bitrate matches the quality produced by AVCaptureSessionPresetMedium or Low.
-	else
-		bitsPerPixel = 11.4; // This bitrate matches the quality produced by AVCaptureSessionPresetHigh.
-	
-	bitsPerSecond = numPixels * bitsPerPixel;
+
 	
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
 											  [NSNumber numberWithInteger:width], AVVideoWidthKey,
 											  [NSNumber numberWithInteger:height], AVVideoHeightKey,
 											  [NSDictionary dictionaryWithObjectsAndKeys:
-											   [NSNumber numberWithInteger:bitsPerSecond], AVVideoAverageBitRateKey,
+											   [NSNumber numberWithInteger:bps], AVVideoAverageBitRateKey,
 											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
 											   nil], AVVideoCompressionPropertiesKey,
 											  nil];
@@ -70,6 +60,27 @@
 		NSLog(@"Couldn't apply video output settings.");
 	}
     self.readyToRecordVideo = YES;
+}
+
+- (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
+{
+    float bitsPerPixel;
+    
+    CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
+    CGFloat width = dimensions.width;
+    CGFloat height = dimensions.height;
+    
+    int numPixels = width * height;
+	int bitsPerSecond;
+	
+	// Assume that lower-than-SD resolutions are intended for streaming, and use a lower bitrate
+	if ( numPixels < (640 * 480) )
+		bitsPerPixel = 4.05; // This bitrate matches the quality produced by AVCaptureSessionPresetMedium or Low.
+	else
+		bitsPerPixel = 11.4; // This bitrate matches the quality produced by AVCaptureSessionPresetHigh.
+	
+	bitsPerSecond = numPixels * bitsPerPixel;
+    [self setupVideoEncoderWithFormatDescription:formatDescription bitsPerSecond:bitsPerSecond];
 }
 
 - (CGFloat)angleOffsetFromPortraitOrientationToOrientation:(AVCaptureVideoOrientation)orientation
