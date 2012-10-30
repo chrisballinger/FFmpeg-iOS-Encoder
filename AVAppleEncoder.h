@@ -10,7 +10,8 @@
 #import <AVFoundation/AVFoundation.h>
 
 @interface AVAppleEncoder : NSObject {
-
+    unsigned long long fileOffset;
+    __block dispatch_source_t source;
 }
 
 @property (nonatomic, retain) NSURL *movieURL;
@@ -29,6 +30,8 @@
 - (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
+
+@property (nonatomic) BOOL watchOutputFile;
 
 - (void) finishEncoding;
 

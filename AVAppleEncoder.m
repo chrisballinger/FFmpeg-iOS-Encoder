@@ -15,6 +15,7 @@
 
 @implementation AVAppleEncoder
 @synthesize assetWriter, audioEncoder, videoEncoder, movieURL, readyToRecordAudio, readyToRecordVideo, referenceOrientation, videoOrientation;
+@synthesize watchOutputFile;
 
 
 - (id) initWithURL:(NSURL *)url {
@@ -26,8 +27,50 @@
             [self showError:error];
         }
         referenceOrientation = UIDeviceOrientationPortrait;
+        fileOffset = 0;
+        source = NULL;
     }
     return self;
+}
+
+// Modified from
+// http://www.davidhamrick.com/2011/10/13/Monitoring-Files-With-GCD-Being-Edited-With-A-Text-Editor.html
+- (void)watchOutputFileHandle
+{
+	dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+	int fildes = open([[movieURL path] UTF8String], O_EVTONLY);
+    
+	source = dispatch_source_create(DISPATCH_SOURCE_TYPE_VNODE,fildes,
+															  DISPATCH_VNODE_DELETE | DISPATCH_VNODE_WRITE | DISPATCH_VNODE_EXTEND | DISPATCH_VNODE_ATTRIB | DISPATCH_VNODE_LINK | DISPATCH_VNODE_RENAME | DISPATCH_VNODE_REVOKE,
+															  queue);
+	dispatch_source_set_event_handler(source, ^
+                                      {
+                                          unsigned long flags = dispatch_source_get_data(source);
+                                          if(flags & DISPATCH_VNODE_DELETE)
+                                          {
+                                              dispatch_source_cancel(source);
+                                              //[blockSelf watchStyleSheet:path];
+                                          }
+                                          if(flags & DISPATCH_VNODE_EXTEND)
+                                          {
+                                              NSLog(@"File size changed");
+                                              NSError *error = nil;
+                                              NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingFromURL:movieURL error:&error];
+                                              if (error) {
+                                                  [self showError:error];
+                                              }
+                                              [fileHandle seekToFileOffset:fileOffset];
+                                              NSData *newData = [fileHandle readDataToEndOfFile];
+                                              NSLog(@"newData: %d bytes", [newData length]);
+                                              fileOffset = [fileHandle offsetInFile];
+                                          }
+                                          // Reload config file
+                                      });
+	dispatch_source_set_cancel_handler(source, ^(void) 
+                                       {
+                                           close(fildes);
+                                       });
+	dispatch_resume(source);
 }
 
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
@@ -171,6 +214,9 @@
 	}
 	
 	if ( assetWriter.status == AVAssetWriterStatusWriting ) {
+        if (watchOutputFile && !source) {
+            [self watchOutputFileHandle];
+        }
 		
 		if (mediaType == AVMediaTypeVideo) {
 			if (videoEncoder.readyForMoreMediaData) {
@@ -196,6 +242,10 @@
     [self.videoEncoder markAsFinished];
     if (![assetWriter finishWriting]) {
         [self showError:[assetWriter error]];
+    }
+    if(source) {
+        dispatch_source_cancel(source);
+        source = NULL;
     }
 }
 

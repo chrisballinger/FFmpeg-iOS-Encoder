@@ -376,6 +376,7 @@
 				// Initialize the video input if this is not done yet
 				if (!appleEncoder2.readyToRecordVideo) {
 					[appleEncoder2 setupVideoEncoderWithFormatDescription:formatDescription bitsPerSecond:1244160];
+                    appleEncoder2.watchOutputFile = YES;
                 }
 				
 				// Write video data to file
@@ -475,7 +476,7 @@
 		Clients whose image processing is faster than real-time should consider setting AVCaptureVideoDataOutput's
 		alwaysDiscardsLateVideoFrames property to NO. 
 	 */
-	[videoOut setAlwaysDiscardsLateVideoFrames:YES];
+	[videoOut setAlwaysDiscardsLateVideoFrames:NO];
         /*
      2012-10-24 22:09:13.074 RosyWriter[86513:707] kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
      2012-10-24 22:09:13.080 RosyWriter[86513:707] kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
