@@ -26,8 +26,10 @@
         if (error) {
             [self showError:error];
         }
+        assetWriter.movieFragmentInterval = CMTimeMakeWithSeconds(1, 30);
         referenceOrientation = UIDeviceOrientationPortrait;
         fileOffset = 0;
+        fileNumber = 0;
         source = NULL;
     }
     return self;
@@ -53,7 +55,7 @@
                                           }
                                           if(flags & DISPATCH_VNODE_EXTEND)
                                           {
-                                              NSLog(@"File size changed");
+                                              //NSLog(@"File size changed");
                                               NSError *error = nil;
                                               NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingFromURL:movieURL error:&error];
                                               if (error) {
@@ -61,10 +63,17 @@
                                               }
                                               [fileHandle seekToFileOffset:fileOffset];
                                               NSData *newData = [fileHandle readDataToEndOfFile];
-                                              NSLog(@"newData: %d bytes", [newData length]);
-                                              fileOffset = [fileHandle offsetInFile];
+                                              if ([newData length] > 0) {
+                                                  NSLog(@"newData (%lld): %d bytes", fileOffset, [newData length]);
+                                                  NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                                                  NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+                                                  NSString *movieName = [NSString stringWithFormat:@"%d.%lld.%d.mp4", fileNumber, fileOffset, [newData length]];
+                                                  NSString *path = [NSString stringWithFormat:@"%@/%@", basePath, movieName];
+                                                  [newData writeToFile:path atomically:NO];
+                                                  fileNumber++;
+                                                  fileOffset = [fileHandle offsetInFile];
+                                              }
                                           }
-                                          // Reload config file
                                       });
 	dispatch_source_set_cancel_handler(source, ^(void) 
                                        {

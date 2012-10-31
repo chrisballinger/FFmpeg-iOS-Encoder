@@ -12,6 +12,7 @@
 @interface AVAppleEncoder : NSObject {
     unsigned long long fileOffset;
     __block dispatch_source_t source;
+    int fileNumber;
 }
 
 @property (nonatomic, retain) NSURL *movieURL;
