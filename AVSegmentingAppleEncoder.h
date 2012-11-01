@@ -8,14 +8,14 @@
 
 #import "AVAppleEncoder.h"
 
-@interface AVSegmentingAppleEncoder : AVAppleEncoder
+@interface AVSegmentingAppleEncoder : AVAppleEncoder {
+    int videoBPS;
+    int audioBPS;
+}
 
-@property (nonatomic, retain) AVAssetWriter *assetWriter1;
-@property (nonatomic, retain) AVAssetWriterInput *audioEncoder1;
-@property (nonatomic, retain) AVAssetWriterInput *videoEncoder1;
-@property (nonatomic, retain) AVAssetWriter *assetWriter2;
-@property (nonatomic, retain) AVAssetWriterInput *audioEncoder2;
-@property (nonatomic, retain) AVAssetWriterInput *videoEncoder2;
+@property (nonatomic, retain) AVAssetWriter *queuedAssetWriter;
+@property (nonatomic, retain) AVAssetWriterInput *queuedAudioEncoder;
+@property (nonatomic, retain) AVAssetWriterInput *queuedVideoEncoder;
 
 @property (nonatomic, retain) NSTimer *segmentationTimer;
 

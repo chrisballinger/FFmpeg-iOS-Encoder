@@ -43,5 +43,6 @@
 @property (nonatomic) BOOL watchOutputFile;
 
 - (void) finishEncoding;
+- (void) showError:(NSError*)error;
 
 @end

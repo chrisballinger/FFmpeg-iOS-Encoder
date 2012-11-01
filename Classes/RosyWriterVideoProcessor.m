@@ -199,7 +199,7 @@
 - (void) initializeAssetWriters {
     // Create an asset writer
     self.appleEncoder1 = [[AVAppleEncoder alloc] initWithURL:[self newMovieURL]];
-    self.appleEncoder2 = [[AVAppleEncoder alloc] initWithURL:[self newMovieURL]];
+    self.appleEncoder2 = [[AVSegmentingAppleEncoder alloc] initWithURL:[self newMovieURL] segmentationInterval:5.0f];
 }
 
 - (void) stopRecording
