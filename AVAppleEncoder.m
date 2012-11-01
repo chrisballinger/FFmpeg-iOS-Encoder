@@ -90,12 +90,12 @@
 
 
 
-- (void) setupVideoEncoder:(AVAssetWriterInput**)currentVideoEncoder assetWriter:(AVAssetWriter**)currentAssetWriter withFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
-    
+- (AVAssetWriterInput*) setupVideoEncoderWithAssetWriter:(AVAssetWriter*)currentAssetWriter formatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps
+{
 	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
     CGFloat width = dimensions.width;
     CGFloat height = dimensions.height;
-
+    AVAssetWriterInput *currentVideoEncoder = nil;
 	
 	NSDictionary *videoCompressionSettings = [NSDictionary dictionaryWithObjectsAndKeys:
 											  AVVideoCodecH264, AVVideoCodecKey,
@@ -106,12 +106,12 @@
 											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
 											   nil], AVVideoCompressionPropertiesKey,
 											  nil];
-	if ([*currentAssetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
-		*currentVideoEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
-		(*currentVideoEncoder).expectsMediaDataInRealTime = YES;
-		(*currentVideoEncoder).transform = [self transformFromCurrentVideoOrientationToOrientation:self.referenceOrientation];
-		if ([*currentAssetWriter canAddInput:*currentVideoEncoder])
-			[*currentAssetWriter addInput:*currentVideoEncoder];
+	if ([currentAssetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
+		currentVideoEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
+		currentVideoEncoder.expectsMediaDataInRealTime = YES;
+		currentVideoEncoder.transform = [self transformFromCurrentVideoOrientationToOrientation:self.referenceOrientation];
+		if ([currentAssetWriter canAddInput:currentVideoEncoder])
+			[currentAssetWriter addInput:currentVideoEncoder];
 		else {
 			NSLog(@"Couldn't add asset writer video input.");
 		}
@@ -119,15 +119,13 @@
 	else {
 		NSLog(@"Couldn't apply video output settings.");
 	}
-    self.readyToRecordVideo = YES;
+    return currentVideoEncoder;
 }
 
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
     videoFormatDescription = formatDescription;
-    AVAssetWriterInput *currentVideoEncoder = nil;
-    AVAssetWriter *currentAssetWriter = assetWriter;
-    [self setupVideoEncoder:&currentVideoEncoder assetWriter:&currentAssetWriter withFormatDescription:formatDescription bitsPerSecond:bps];
-    videoEncoder = currentVideoEncoder;
+    videoEncoder = [self setupVideoEncoderWithAssetWriter:assetWriter formatDescription:formatDescription bitsPerSecond:bps];
+    self.readyToRecordVideo = YES;
 }
 
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
@@ -195,15 +193,14 @@
 }
 - (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
     audioFormatDescription = formatDescription;
-    AVAssetWriterInput *currentAudioEncoder = nil;
-    AVAssetWriter *currentAssetWriter = assetWriter;
-    [self setupAudioEncoder:&currentAudioEncoder assetWriter:&currentAssetWriter withFormatDescription:formatDescription bitsPerSecond:bps];
-    audioEncoder = currentAudioEncoder;
+    audioEncoder = [self setupAudioEncoderWithAssetWriter:assetWriter formatDescription:formatDescription bitsPerSecond:bps];
+    self.readyToRecordAudio = YES;
 }
 
-- (void) setupAudioEncoder:(AVAssetWriterInput**)currentAudioEncoder assetWriter:(AVAssetWriter**)currentAssetWriter withFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps
+- (AVAssetWriterInput*) setupAudioEncoderWithAssetWriter:(AVAssetWriter*)currentAssetWriter formatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps
 {
 	const AudioStreamBasicDescription *currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
+    AVAssetWriterInput *currentAudioEncoder = nil;
     
 	size_t aclSize = 0;
 	const AudioChannelLayout *currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(formatDescription, &aclSize);
@@ -222,11 +219,11 @@
 											  [NSNumber numberWithInteger:currentASBD->mChannelsPerFrame], AVNumberOfChannelsKey,
 											  currentChannelLayoutData, AVChannelLayoutKey,
 											  nil];
-	if ([*currentAssetWriter canApplyOutputSettings:audioCompressionSettings forMediaType:AVMediaTypeAudio]) {
-		*currentAudioEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSettings];
-		(*currentAudioEncoder).expectsMediaDataInRealTime = YES;
-		if ([*currentAssetWriter canAddInput:*currentAudioEncoder])
-			[*currentAssetWriter addInput:*currentAudioEncoder];
+	if ([currentAssetWriter canApplyOutputSettings:audioCompressionSettings forMediaType:AVMediaTypeAudio]) {
+		currentAudioEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSettings];
+		currentAudioEncoder.expectsMediaDataInRealTime = YES;
+		if ([currentAssetWriter canAddInput:currentAudioEncoder])
+			[currentAssetWriter addInput:currentAudioEncoder];
 		else {
 			NSLog(@"Couldn't add asset writer audio input.");
 		}
@@ -234,7 +231,7 @@
 	else {
 		NSLog(@"Couldn't apply audio output settings.");
 	}
-    self.readyToRecordAudio = YES;
+    return currentAudioEncoder;
 }
 
 - (void) writeSampleBuffer:(CMSampleBufferRef)sampleBuffer ofType:(NSString *)mediaType

@@ -37,8 +37,8 @@
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
 
-- (void) setupVideoEncoder:(AVAssetWriterInput**)currentVideoEncoder assetWriter:(AVAssetWriter**)currentAssetWriter withFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
-- (void) setupAudioEncoder:(AVAssetWriterInput**)currentAudioEncoder assetWriter:(AVAssetWriter**)currentAssetWriter withFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
+- (AVAssetWriterInput*) setupVideoEncoderWithAssetWriter:(AVAssetWriter*)currentAssetWriter formatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
+- (AVAssetWriterInput*) setupAudioEncoderWithAssetWriter:(AVAssetWriter*)currentAssetWriter formatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps;
 
 @property (nonatomic) BOOL watchOutputFile;
 
