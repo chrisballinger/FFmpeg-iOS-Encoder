@@ -29,8 +29,9 @@
 }
 
 - (id) initWithURL:(NSURL *)url segmentationInterval:(NSTimeInterval)timeInterval {
-    if (self = [super initWithURL:url]) {
-        self.segmentationTimer = [NSTimer scheduledTimerWithTimeInterval:timeInterval target:self selector:@selector(segmentRecording:) userInfo:nil repeats:YES];
+    if (self = [super init]) {
+        self.segmentationTimer = [NSTimer timerWithTimeInterval:timeInterval target:self selector:@selector(segmentRecording:) userInfo:nil repeats:YES];
+        [[NSRunLoop mainRunLoop] addTimer:segmentationTimer forMode:NSDefaultRunLoopMode];
     }
     return self;
 }
@@ -51,22 +52,27 @@
     self.assetWriter = queuedAssetWriter;
     self.audioEncoder = queuedAudioEncoder;
     self.videoEncoder = queuedVideoEncoder;
-    NSLog(@"Switching encoders");
+    //NSLog(@"Switching encoders");
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
         [tempAudioEncoder markAsFinished];
         [tempVideoEncoder markAsFinished];
-        if(![tempAssetWriter finishWriting]) {
-            [self showError:[tempAssetWriter error]];
+        if (tempAssetWriter.status == AVAssetWriterStatusWriting) {
+            if(![tempAssetWriter finishWriting]) {
+                [self showError:[tempAssetWriter error]];
+            }
         }
-        NSError *error = nil;
-        self.queuedAssetWriter = [[AVAssetWriter alloc] initWithURL:[self newMovieURL] fileType:(NSString *)kUTTypeMPEG4 error:&error];
-        if (error) {
-            [self showError:error];
+        if (self.readyToRecordAudio && self.readyToRecordVideo) {
+            NSError *error = nil;
+            self.queuedAssetWriter = [[AVAssetWriter alloc] initWithURL:[self newMovieURL] fileType:(NSString *)kUTTypeMPEG4 error:&error];
+            if (error) {
+                [self showError:error];
+            }
+            self.queuedVideoEncoder = [self setupVideoEncoderWithAssetWriter:self.queuedAssetWriter formatDescription:videoFormatDescription bitsPerSecond:videoBPS];
+            self.queuedAudioEncoder = [self setupAudioEncoderWithAssetWriter:self.queuedAssetWriter formatDescription:audioFormatDescription bitsPerSecond:audioBPS];
+            //NSLog(@"Encoder switch finished");
+
         }
-        self.queuedVideoEncoder = [self setupVideoEncoderWithAssetWriter:self.queuedAssetWriter formatDescription:videoFormatDescription bitsPerSecond:videoBPS];
-        self.queuedVideoEncoder = [self setupVideoEncoderWithAssetWriter:self.queuedAssetWriter formatDescription:audioFormatDescription bitsPerSecond:audioBPS];
-        NSLog(@"Encoder switch finished");
     });
 }
 
