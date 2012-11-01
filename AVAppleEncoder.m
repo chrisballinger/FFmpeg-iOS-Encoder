@@ -123,6 +123,7 @@
 }
 
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
+    videoFormatDescription = formatDescription;
     AVAssetWriterInput *currentVideoEncoder = nil;
     AVAssetWriter *currentAssetWriter = assetWriter;
     [self setupVideoEncoder:&currentVideoEncoder assetWriter:&currentAssetWriter withFormatDescription:formatDescription bitsPerSecond:bps];
@@ -193,6 +194,7 @@
     [self setupAudioEncoderWithFormatDescription:formatDescription bitsPerSecond:64000];
 }
 - (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
+    audioFormatDescription = formatDescription;
     AVAssetWriterInput *currentAudioEncoder = nil;
     AVAssetWriter *currentAssetWriter = assetWriter;
     [self setupAudioEncoder:&currentAudioEncoder assetWriter:&currentAssetWriter withFormatDescription:formatDescription bitsPerSecond:bps];
