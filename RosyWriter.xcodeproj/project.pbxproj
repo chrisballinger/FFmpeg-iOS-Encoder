@@ -30,6 +30,7 @@
 		D91D28B0163F3014008EBFDB /* libvpx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D91D28AF163F3014008EBFDB /* libvpx.a */; };
 		D91D28B7163F40A4008EBFDB /* AVEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D91D28B6163F40A4008EBFDB /* AVEncoder.m */; };
 		D91D28BB163F42EA008EBFDB /* AVAppleEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D91D28BA163F42EA008EBFDB /* AVAppleEncoder.m */; };
+		D92009BA1642FAF1001E433E /* AVSegmentingAppleEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D92009B91642FAF1001E433E /* AVSegmentingAppleEncoder.m */; };
 		D96658231639DBA100F1BF7C /* FFVideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658221639DBA100F1BF7C /* FFVideoEncoder.m */; };
 		D96658281639E7BA00F1BF7C /* FFEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D96658271639E7BA00F1BF7C /* FFEncoder.m */; };
 		D966582B1639E88800F1BF7C /* FFAudioEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D966582A1639E88800F1BF7C /* FFAudioEncoder.m */; };
@@ -76,6 +77,8 @@
 		D91D28B6163F40A4008EBFDB /* AVEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVEncoder.m; sourceTree = "<group>"; };
 		D91D28B9163F42EA008EBFDB /* AVAppleEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVAppleEncoder.h; sourceTree = "<group>"; };
 		D91D28BA163F42EA008EBFDB /* AVAppleEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVAppleEncoder.m; sourceTree = "<group>"; };
+		D92009B81642FAF1001E433E /* AVSegmentingAppleEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVSegmentingAppleEncoder.h; sourceTree = "<group>"; };
+		D92009B91642FAF1001E433E /* AVSegmentingAppleEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVSegmentingAppleEncoder.m; sourceTree = "<group>"; };
 		D96658211639DBA100F1BF7C /* FFVideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFVideoEncoder.h; sourceTree = "<group>"; };
 		D96658221639DBA100F1BF7C /* FFVideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FFVideoEncoder.m; sourceTree = "<group>"; };
 		D96658261639E7BA00F1BF7C /* FFEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFEncoder.h; sourceTree = "<group>"; };
@@ -290,6 +293,8 @@
 				D91D28B6163F40A4008EBFDB /* AVEncoder.m */,
 				D91D28B9163F42EA008EBFDB /* AVAppleEncoder.h */,
 				D91D28BA163F42EA008EBFDB /* AVAppleEncoder.m */,
+				D92009B81642FAF1001E433E /* AVSegmentingAppleEncoder.h */,
+				D92009B91642FAF1001E433E /* AVSegmentingAppleEncoder.m */,
 				D96658261639E7BA00F1BF7C /* FFEncoder.h */,
 				D96658271639E7BA00F1BF7C /* FFEncoder.m */,
 			);
@@ -540,6 +545,7 @@
 				D99BE1E3163B370D0096AF6B /* FFAVEncoder.m in Sources */,
 				D91D28B7163F40A4008EBFDB /* AVEncoder.m in Sources */,
 				D91D28BB163F42EA008EBFDB /* AVAppleEncoder.m in Sources */,
+				D92009BA1642FAF1001E433E /* AVSegmentingAppleEncoder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

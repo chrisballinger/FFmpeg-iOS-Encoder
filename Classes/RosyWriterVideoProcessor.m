@@ -192,10 +192,8 @@
 			
         [self initializeAssetWriters];
 	});
-    if (self.segmentationTimer) {
-        [self.segmentationTimer invalidate];
-    }
-    //self.segmentationTimer = [NSTimer scheduledTimerWithTimeInterval:5.0f target:self selector:@selector(segmentRecording:) userInfo:nil repeats:YES];
+
+
 }
 
 - (void) initializeAssetWriters {
@@ -375,8 +373,7 @@
 				
 				// Initialize the video input if this is not done yet
 				if (!appleEncoder2.readyToRecordVideo) {
-					[appleEncoder2 setupVideoEncoderWithFormatDescription:formatDescription bitsPerSecond:1244160];
-                    appleEncoder2.watchOutputFile = YES;
+					[appleEncoder2 setupVideoEncoderWithFormatDescription:formatDescription bitsPerSecond:800000];
                 }
 				
 				// Write video data to file

@@ -17,8 +17,7 @@
 @synthesize assetWriter, audioEncoder, videoEncoder, movieURL, readyToRecordAudio, readyToRecordVideo, referenceOrientation, videoOrientation;
 @synthesize watchOutputFile;
 
-
-- (id) initWithURL:(NSURL *)url {
+- (id) initWithURL:(NSURL *)url movieFragmentInterval:(CMTime)fragmentInterval {
     if (self = [super init]) {
         self.movieURL = url;
         NSError *error = nil;
@@ -26,11 +25,18 @@
         if (error) {
             [self showError:error];
         }
-        assetWriter.movieFragmentInterval = CMTimeMakeWithSeconds(1, 30);
+        assetWriter.movieFragmentInterval = fragmentInterval;
         referenceOrientation = UIDeviceOrientationPortrait;
         fileOffset = 0;
         fileNumber = 0;
         source = NULL;
+    }
+    return self;
+}
+
+- (id) initWithURL:(NSURL *)url {
+    if (self = [self initWithURL:url movieFragmentInterval:kCMTimeInvalid]) {
+        
     }
     return self;
 }
@@ -82,7 +88,9 @@
 	dispatch_resume(source);
 }
 
-- (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
+
+
+- (void) setupVideoEncoder:(AVAssetWriterInput**)currentVideoEncoder assetWriter:(AVAssetWriter**)currentAssetWriter withFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
     
 	CMVideoDimensions dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription);
     CGFloat width = dimensions.width;
@@ -98,12 +106,12 @@
 											   [NSNumber numberWithInteger:30], AVVideoMaxKeyFrameIntervalKey,
 											   nil], AVVideoCompressionPropertiesKey,
 											  nil];
-	if ([assetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
-		videoEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
-		videoEncoder.expectsMediaDataInRealTime = YES;
-		videoEncoder.transform = [self transformFromCurrentVideoOrientationToOrientation:self.referenceOrientation];
-		if ([assetWriter canAddInput:videoEncoder])
-			[assetWriter addInput:videoEncoder];
+	if ([*currentAssetWriter canApplyOutputSettings:videoCompressionSettings forMediaType:AVMediaTypeVideo]) {
+		*currentVideoEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeVideo outputSettings:videoCompressionSettings];
+		(*currentVideoEncoder).expectsMediaDataInRealTime = YES;
+		(*currentVideoEncoder).transform = [self transformFromCurrentVideoOrientationToOrientation:self.referenceOrientation];
+		if ([*currentAssetWriter canAddInput:*currentVideoEncoder])
+			[*currentAssetWriter addInput:*currentVideoEncoder];
 		else {
 			NSLog(@"Couldn't add asset writer video input.");
 		}
@@ -112,6 +120,13 @@
 		NSLog(@"Couldn't apply video output settings.");
 	}
     self.readyToRecordVideo = YES;
+}
+
+- (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
+    AVAssetWriterInput *currentVideoEncoder = nil;
+    AVAssetWriter *currentAssetWriter = assetWriter;
+    [self setupVideoEncoder:&currentVideoEncoder assetWriter:&currentAssetWriter withFormatDescription:formatDescription bitsPerSecond:bps];
+    videoEncoder = currentVideoEncoder;
 }
 
 - (void) setupVideoEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
@@ -174,7 +189,17 @@
 	return transform;
 }
 
-- (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription;
+- (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription {
+    [self setupAudioEncoderWithFormatDescription:formatDescription bitsPerSecond:64000];
+}
+- (void) setupAudioEncoderWithFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps {
+    AVAssetWriterInput *currentAudioEncoder = nil;
+    AVAssetWriter *currentAssetWriter = assetWriter;
+    [self setupAudioEncoder:&currentAudioEncoder assetWriter:&currentAssetWriter withFormatDescription:formatDescription bitsPerSecond:bps];
+    audioEncoder = currentAudioEncoder;
+}
+
+- (void) setupAudioEncoder:(AVAssetWriterInput**)currentAudioEncoder assetWriter:(AVAssetWriter**)currentAssetWriter withFormatDescription:(CMFormatDescriptionRef)formatDescription bitsPerSecond:(int)bps
 {
 	const AudioStreamBasicDescription *currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription);
     
@@ -195,11 +220,11 @@
 											  [NSNumber numberWithInteger:currentASBD->mChannelsPerFrame], AVNumberOfChannelsKey,
 											  currentChannelLayoutData, AVChannelLayoutKey,
 											  nil];
-	if ([assetWriter canApplyOutputSettings:audioCompressionSettings forMediaType:AVMediaTypeAudio]) {
-		audioEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSettings];
-		audioEncoder.expectsMediaDataInRealTime = YES;
-		if ([assetWriter canAddInput:audioEncoder])
-			[assetWriter addInput:audioEncoder];
+	if ([*currentAssetWriter canApplyOutputSettings:audioCompressionSettings forMediaType:AVMediaTypeAudio]) {
+		*currentAudioEncoder = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio outputSettings:audioCompressionSettings];
+		(*currentAudioEncoder).expectsMediaDataInRealTime = YES;
+		if ([*currentAssetWriter canAddInput:*currentAudioEncoder])
+			[*currentAssetWriter addInput:*currentAudioEncoder];
 		else {
 			NSLog(@"Couldn't add asset writer audio input.");
 		}
