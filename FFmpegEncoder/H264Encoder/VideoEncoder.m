@@ -28,11 +28,20 @@
     NSURL* url = [NSURL fileURLWithPath:self.path];
     
     _writer = [AVAssetWriter assetWriterWithURL:url fileType:AVFileTypeQuickTimeMovie error:nil];
-    NSDictionary* settings = [NSDictionary dictionaryWithObjectsAndKeys:
-                              AVVideoCodecH264, AVVideoCodecKey,
-                              [NSNumber numberWithInt: width], AVVideoWidthKey,
-                              [NSNumber numberWithInt:height], AVVideoHeightKey,
-                              nil];
+    NSDictionary* settings = @{
+        AVVideoCodecKey: AVVideoCodecH264,
+        AVVideoWidthKey: @(width),
+        AVVideoHeightKey: @(height),
+        AVVideoCompressionPropertiesKey: @{
+             AVVideoAverageBitRateKey: @(1200000),
+             AVVideoMaxKeyFrameIntervalKey: @(150),
+             AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel,
+             AVVideoAllowFrameReorderingKey: @NO,
+             //AVVideoH264EntropyModeKey: AVVideoH264EntropyModeCAVLC,
+             //AVVideoExpectedSourceFrameRateKey: @(30),
+             //AVVideoAverageNonDroppableFrameRateKey: @(30)
+        }
+    };
     _writerInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeVideo outputSettings:settings];
     _writerInput.expectsMediaDataInRealTime = YES;
     [_writer addInput:_writerInput];

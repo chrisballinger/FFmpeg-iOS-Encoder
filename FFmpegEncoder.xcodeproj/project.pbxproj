@@ -9462,6 +9462,7 @@
 					"$(SRCROOT)/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/include",
 				);
 				INFOPLIST_FILE = "FFmpegEncoder/FFmpegEncoder-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"/Users/chrisbal/FFmpeg-iOS-Encoder/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/lib",
@@ -9484,6 +9485,7 @@
 					"$(SRCROOT)/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/include",
 				);
 				INFOPLIST_FILE = "FFmpegEncoder/FFmpegEncoder-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"/Users/chrisbal/FFmpeg-iOS-Encoder/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/lib",
