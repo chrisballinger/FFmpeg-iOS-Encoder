@@ -17,6 +17,7 @@
 		D9737AB7185F93A10028C732 /* RTSPMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AAB185F93A10028C732 /* RTSPMessage.m */; };
 		D9737AB8185F93A10028C732 /* RTSPServer.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AAD185F93A10028C732 /* RTSPServer.m */; };
 		D9737AB9185F93A10028C732 /* VideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AAF185F93A10028C732 /* VideoEncoder.m */; };
+		D9737AC6185FDCD70028C732 /* HLSWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AC5185FDCD70028C732 /* HLSWriter.m */; };
 		D9CBE7D6185E80530012A1DD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CBE7D5185E80530012A1DD /* Foundation.framework */; };
 		D9CBE7D8185E80530012A1DD /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CBE7D7185E80530012A1DD /* CoreGraphics.framework */; };
 		D9CBE7DA185E80530012A1DD /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CBE7D9185E80530012A1DD /* UIKit.framework */; };
@@ -80,6 +81,9 @@
 		D9737AAD185F93A10028C732 /* RTSPServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RTSPServer.m; path = FFmpegEncoder/H264Encoder/RTSPServer.m; sourceTree = "<group>"; };
 		D9737AAE185F93A10028C732 /* VideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VideoEncoder.h; path = FFmpegEncoder/H264Encoder/VideoEncoder.h; sourceTree = "<group>"; };
 		D9737AAF185F93A10028C732 /* VideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = VideoEncoder.m; path = FFmpegEncoder/H264Encoder/VideoEncoder.m; sourceTree = "<group>"; };
+		D9737AC0185FDB700028C732 /* FFmpegWrapper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = FFmpegWrapper.c; path = FFmpegEncoder/FFmpegWrapper.c; sourceTree = "<group>"; };
+		D9737AC4185FDCD70028C732 /* HLSWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HLSWriter.h; path = FFmpegEncoder/HLSWriter.h; sourceTree = "<group>"; };
+		D9737AC5185FDCD70028C732 /* HLSWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HLSWriter.m; path = FFmpegEncoder/HLSWriter.m; sourceTree = "<group>"; };
 		D9CBE7D2185E80530012A1DD /* FFmpegEncoder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FFmpegEncoder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CBE7D5185E80530012A1DD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D9CBE7D7185E80530012A1DD /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -4354,6 +4358,9 @@
 		D9CBE7C9185E80530012A1DD = {
 			isa = PBXGroup;
 			children = (
+				D9737AC4185FDCD70028C732 /* HLSWriter.h */,
+				D9737AC5185FDCD70028C732 /* HLSWriter.m */,
+				D9737AC0185FDB700028C732 /* FFmpegWrapper.c */,
 				D9737ABA185F93A50028C732 /* H264Encoder */,
 				D9CBF8B8185E81DC0012A1DD /* FFmpegWrapper */,
 				D9CBF8B7185E81910012A1DD /* ffmpeg */,
@@ -9321,6 +9328,7 @@
 				D9CBE7E2185E80530012A1DD /* main.m in Sources */,
 				D9CBF8CF185E81DC0012A1DD /* FFInputStream.m in Sources */,
 				D9CBF8D1185E81DC0012A1DD /* FFOutputFile.m in Sources */,
+				D9737AC6185FDCD70028C732 /* HLSWriter.m in Sources */,
 				D9737AB4185F93A10028C732 /* MP4Atom.m in Sources */,
 				D9737AB1185F93A10028C732 /* CameraServer.mm in Sources */,
 				D9CBF8CD185E81DC0012A1DD /* FFFile.m in Sources */,
