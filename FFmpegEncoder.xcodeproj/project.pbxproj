@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D9737AB0185F93A10028C732 /* AVEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = D9737A9D185F939F0028C732 /* AVEncoder.mm */; };
-		D9737AB1185F93A10028C732 /* CameraServer.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737A9F185F93A00028C732 /* CameraServer.m */; };
+		D9737AB1185F93A10028C732 /* CameraServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = D9737A9F185F93A00028C732 /* CameraServer.mm */; };
 		D9737AB2185F93A10028C732 /* EncoderDemoAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AA1185F93A00028C732 /* EncoderDemoAppDelegate.m */; };
 		D9737AB3185F93A10028C732 /* EncoderDemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AA3185F93A00028C732 /* EncoderDemoViewController.m */; };
 		D9737AB4185F93A10028C732 /* MP4Atom.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AA5185F93A00028C732 /* MP4Atom.m */; };
@@ -63,7 +63,7 @@
 		D9737A9C185F939F0028C732 /* AVEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AVEncoder.h; path = FFmpegEncoder/H264Encoder/AVEncoder.h; sourceTree = "<group>"; };
 		D9737A9D185F939F0028C732 /* AVEncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AVEncoder.mm; path = FFmpegEncoder/H264Encoder/AVEncoder.mm; sourceTree = "<group>"; };
 		D9737A9E185F939F0028C732 /* CameraServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraServer.h; path = FFmpegEncoder/H264Encoder/CameraServer.h; sourceTree = "<group>"; };
-		D9737A9F185F93A00028C732 /* CameraServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CameraServer.m; path = FFmpegEncoder/H264Encoder/CameraServer.m; sourceTree = "<group>"; };
+		D9737A9F185F93A00028C732 /* CameraServer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CameraServer.mm; path = FFmpegEncoder/H264Encoder/CameraServer.mm; sourceTree = "<group>"; };
 		D9737AA0185F93A00028C732 /* EncoderDemoAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EncoderDemoAppDelegate.h; path = FFmpegEncoder/H264Encoder/EncoderDemoAppDelegate.h; sourceTree = "<group>"; };
 		D9737AA1185F93A00028C732 /* EncoderDemoAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = EncoderDemoAppDelegate.m; path = FFmpegEncoder/H264Encoder/EncoderDemoAppDelegate.m; sourceTree = "<group>"; };
 		D9737AA2185F93A00028C732 /* EncoderDemoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EncoderDemoViewController.h; path = FFmpegEncoder/H264Encoder/EncoderDemoViewController.h; sourceTree = "<group>"; };
@@ -4330,7 +4330,7 @@
 				D9737A9C185F939F0028C732 /* AVEncoder.h */,
 				D9737A9D185F939F0028C732 /* AVEncoder.mm */,
 				D9737A9E185F939F0028C732 /* CameraServer.h */,
-				D9737A9F185F93A00028C732 /* CameraServer.m */,
+				D9737A9F185F93A00028C732 /* CameraServer.mm */,
 				D9737AA0185F93A00028C732 /* EncoderDemoAppDelegate.h */,
 				D9737AA1185F93A00028C732 /* EncoderDemoAppDelegate.m */,
 				D9737AA2185F93A00028C732 /* EncoderDemoViewController.h */,
@@ -9322,7 +9322,7 @@
 				D9CBF8CF185E81DC0012A1DD /* FFInputStream.m in Sources */,
 				D9CBF8D1185E81DC0012A1DD /* FFOutputFile.m in Sources */,
 				D9737AB4185F93A10028C732 /* MP4Atom.m in Sources */,
-				D9737AB1185F93A10028C732 /* CameraServer.m in Sources */,
+				D9737AB1185F93A10028C732 /* CameraServer.mm in Sources */,
 				D9CBF8CD185E81DC0012A1DD /* FFFile.m in Sources */,
 				D9737AB3185F93A10028C732 /* EncoderDemoViewController.m in Sources */,
 				D9737AB5185F93A10028C732 /* NALUnit.cpp in Sources */,
