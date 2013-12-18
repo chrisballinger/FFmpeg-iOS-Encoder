@@ -32,6 +32,7 @@ static CameraServer* theServer;
 @property (nonatomic, strong) NSData *naluStartCode;
 @property (nonatomic, strong) NSFileHandle *debugFileHandle;
 @property (nonatomic, strong) HLSWriter *hlsWriter;
+@property (nonatomic, strong) NSMutableData *videoSPSandPPS;
 
 @end
 
@@ -57,11 +58,12 @@ static CameraServer* theServer;
     if (_session == nil)
     {
         NSLog(@"Starting up server");
-        NSUInteger naluLength = 3;
+        NSUInteger naluLength = 4;
         uint8_t *nalu = (uint8_t*)malloc(naluLength * sizeof(uint8_t));
         nalu[0] = 0x00;
         nalu[1] = 0x00;
-        nalu[2] = 0x01;
+        nalu[2] = 0x00;
+        nalu[3] = 0x01;
         _naluStartCode = [NSData dataWithBytesNoCopy:nalu length:naluLength freeWhenDone:YES];
         
         // create capture device with video input
@@ -109,6 +111,10 @@ static CameraServer* theServer;
 }
 
 - (void) writeVideoFrames:(NSArray*)frames pts:(double)pts {
+    if (pts == 0) {
+        NSLog(@"PTS of 0, skipping frame");
+        return;
+    }
     NSError *error = nil;
     if (!_hlsWriter) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -132,18 +138,40 @@ static CameraServer* theServer;
         NSData* spsData = [NSData dataWithBytes:avcC.sps()->Start() length:avcC.sps()->Length()];
         NSData *ppsData = [NSData dataWithBytes:avcC.pps()->Start() length:avcC.pps()->Length()];
         
-        NSMutableData *naluSPS = [[NSMutableData alloc] initWithData:_naluStartCode];
+        _videoSPSandPPS = [NSMutableData dataWithCapacity:avcC.sps()->Length() + avcC.pps()->Length() + _naluStartCode.length * 2];
+        [_videoSPSandPPS appendData:_naluStartCode];
+        [_videoSPSandPPS appendData:spsData];
+        [_videoSPSandPPS appendData:_naluStartCode];
+        [_videoSPSandPPS appendData:ppsData];
+        
+        /*NSMutableData *naluSPS = [[NSMutableData alloc] initWithData:_naluStartCode];
         [naluSPS appendData:spsData];
         NSMutableData *naluPPS = [[NSMutableData alloc] initWithData:_naluStartCode];
         [naluPPS appendData:ppsData];
-        [_hlsWriter processVideoData:naluSPS presentationTimestamp:pts];
-        [_hlsWriter processVideoData:naluPPS presentationTimestamp:pts];
+         */
+        //[_hlsWriter processVideoData:videoSPSandPPS presentationTimestamp:pts-200];
+        //[_hlsWriter processVideoData:ppsData presentationTimestamp:pts-100];
     }
     
     for (NSData *data in frames) {
-        NSMutableData *nalu = [[NSMutableData alloc] initWithData:_naluStartCode];
-        [nalu appendData:data];
-        [_hlsWriter processVideoData:nalu presentationTimestamp:pts];
+        unsigned char* pNal = (unsigned char*)[data bytes];
+        //int idc = pNal[0] & 0x60;
+        int naltype = pNal[0] & 0x1f;
+        NSData *videoData = nil;
+        if (naltype == 5) { // IDR
+            NSMutableData *IDRData = [NSMutableData dataWithData:_videoSPSandPPS];
+            [IDRData appendData:_naluStartCode];
+            [IDRData appendData:data];
+            videoData = IDRData;
+        } else {
+            NSMutableData *regularData = [NSMutableData dataWithData:_naluStartCode];
+            [regularData appendData:data];
+            videoData = regularData;
+        }
+        //NSMutableData *nalu = [[NSMutableData alloc] initWithData:_naluStartCode];
+        //[nalu appendData:data];
+        //NSLog(@"%f: %@", pts, videoData.description);
+        [_hlsWriter processVideoData:videoData presentationTimestamp:pts];
     }
     
 }

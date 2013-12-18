@@ -28,7 +28,6 @@
         avcodec_register_all();
         _directoryPath = directoryPath;
         _packet = av_malloc(sizeof(AVPacket));
-        av_init_packet(_packet);
         _videoTimeBase.num = 1;
         _videoTimeBase.den = 1000000000;
         _audioTimeBase.num = 1;
@@ -40,8 +39,11 @@
 }
 
 - (void) setupOutputFile {
-    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"index.m3u8"];
-    _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"hls"}];
+    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"test.ts"];
+    _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"mpegts"}];
+    
+    //FFBitstreamFilter *bitstreamFilter = [[FFBitstreamFilter alloc] initWithFilterName:@"h264_mp4toannexb"];
+    //[_outputFile addBitstreamFilter:bitstreamFilter];
 }
 
 - (void) setupVideoWithWidth:(int)width height:(int)height {
@@ -65,18 +67,25 @@
 }
 
 - (void) processVideoData:(NSData *)data presentationTimestamp:(double)pts {
+    av_init_packet(_packet);
+
     uint64_t originalPTS = (uint64_t)(1000000000 * pts);
-    _packet->data = (uint8_t*)[data bytes];
+    //NSLog(@"*** Writing packet at %lld", originalPTS);
+    
+    _packet->data = (uint8_t*)data.bytes;
     _packet->size = data.length;
     _packet->stream_index = 0;
     uint64_t scaledPTS = av_rescale_q(originalPTS, _videoTimeBase, _outputFile.formatContext->streams[_packet->stream_index]->time_base);
+    //NSLog(@"*** Scaled PTS: %lld", scaledPTS);
+    
     _packet->pts = scaledPTS;
+    _packet->dts = scaledPTS;
     NSError *error = nil;
     [_outputFile writePacket:_packet error:&error];
     if (error) {
         NSLog(@"error writing packet: %@", error.description);
     } else {
-        NSLog(@"Wrote packet at %lld", originalPTS);
+        //NSLog(@"Wrote packet at %lld", originalPTS);
     }
 }
 

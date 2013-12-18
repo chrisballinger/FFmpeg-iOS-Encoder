@@ -81,9 +81,16 @@
 		D9737AAD185F93A10028C732 /* RTSPServer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = RTSPServer.m; path = FFmpegEncoder/H264Encoder/RTSPServer.m; sourceTree = "<group>"; };
 		D9737AAE185F93A10028C732 /* VideoEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VideoEncoder.h; path = FFmpegEncoder/H264Encoder/VideoEncoder.h; sourceTree = "<group>"; };
 		D9737AAF185F93A10028C732 /* VideoEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = VideoEncoder.m; path = FFmpegEncoder/H264Encoder/VideoEncoder.m; sourceTree = "<group>"; };
-		D9737AC0185FDB700028C732 /* FFmpegWrapper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = FFmpegWrapper.c; path = FFmpegEncoder/FFmpegWrapper.c; sourceTree = "<group>"; };
 		D9737AC4185FDCD70028C732 /* HLSWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HLSWriter.h; path = FFmpegEncoder/HLSWriter.h; sourceTree = "<group>"; };
 		D9737AC5185FDCD70028C732 /* HLSWriter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = HLSWriter.m; path = FFmpegEncoder/HLSWriter.m; sourceTree = "<group>"; };
+		D9A9B805186224FA0093141D /* FFmpegWrapper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = FFmpegWrapper.c; sourceTree = "<group>"; };
+		D9A9B806186224FA0093141D /* FFmpegWrapper.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = FFmpegWrapper.java; sourceTree = "<group>"; };
+		D9A9B807186224FA0093141D /* FileUtils.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = FileUtils.java; sourceTree = "<group>"; };
+		D9A9B808186224FA0093141D /* HLSFileObserver.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = HLSFileObserver.java; sourceTree = "<group>"; };
+		D9A9B809186224FA0093141D /* HLSRecorder.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = HLSRecorder.java; sourceTree = "<group>"; };
+		D9A9B80A186224FA0093141D /* HWRecorderActivity.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = HWRecorderActivity.java; sourceTree = "<group>"; };
+		D9A9B80B186224FA0093141D /* LiveHLSRecorder.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = LiveHLSRecorder.java; sourceTree = "<group>"; };
+		D9A9B80C186224FA0093141D /* S3Client.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = S3Client.java; sourceTree = "<group>"; };
 		D9CBE7D2185E80530012A1DD /* FFmpegEncoder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FFmpegEncoder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9CBE7D5185E80530012A1DD /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		D9CBE7D7185E80530012A1DD /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -4355,12 +4362,28 @@
 			name = H264Encoder;
 			sourceTree = "<group>";
 		};
+		D9A9B804186224FA0093141D /* Android */ = {
+			isa = PBXGroup;
+			children = (
+				D9A9B805186224FA0093141D /* FFmpegWrapper.c */,
+				D9A9B806186224FA0093141D /* FFmpegWrapper.java */,
+				D9A9B807186224FA0093141D /* FileUtils.java */,
+				D9A9B808186224FA0093141D /* HLSFileObserver.java */,
+				D9A9B809186224FA0093141D /* HLSRecorder.java */,
+				D9A9B80A186224FA0093141D /* HWRecorderActivity.java */,
+				D9A9B80B186224FA0093141D /* LiveHLSRecorder.java */,
+				D9A9B80C186224FA0093141D /* S3Client.java */,
+			);
+			name = Android;
+			path = FFmpegEncoder/Android;
+			sourceTree = "<group>";
+		};
 		D9CBE7C9185E80530012A1DD = {
 			isa = PBXGroup;
 			children = (
+				D9A9B804186224FA0093141D /* Android */,
 				D9737AC4185FDCD70028C732 /* HLSWriter.h */,
 				D9737AC5185FDCD70028C732 /* HLSWriter.m */,
-				D9737AC0185FDB700028C732 /* FFmpegWrapper.c */,
 				D9737ABA185F93A50028C732 /* H264Encoder */,
 				D9CBF8B8185E81DC0012A1DD /* FFmpegWrapper */,
 				D9CBF8B7185E81910012A1DD /* ffmpeg */,
