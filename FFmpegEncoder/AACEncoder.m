@@ -29,7 +29,7 @@
 - (id) init {
     if (self = [super init]) {
         _encoderQueue = dispatch_queue_create("AAC Encoder Queue", DISPATCH_QUEUE_SERIAL);
-        _callbackQueue = dispatch_get_main_queue();
+        _callbackQueue = dispatch_queue_create("AAC Encoder Callback Queue", DISPATCH_QUEUE_SERIAL);
         _audioConverter = NULL;
         _pcmBufferSize = 0;
         _pcmBuffer = NULL;
@@ -160,7 +160,11 @@ static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNu
         //NSLog(@"ioOutputDataPacketSize: %d", (unsigned int)ioOutputDataPacketSize);
         NSData *data = nil;
         if (status == 0) {
-            data = [NSData dataWithBytes:outAudioBufferList.mBuffers[0].mData length:outAudioBufferList.mBuffers[0].mDataByteSize];
+            NSData *rawAAC = [NSData dataWithBytes:outAudioBufferList.mBuffers[0].mData length:outAudioBufferList.mBuffers[0].mDataByteSize];
+            NSData *adtsHeader = [self adtsDataForPacketLength:rawAAC.length];
+            NSMutableData *fullData = [NSMutableData dataWithData:adtsHeader];
+            [fullData appendData:rawAAC];
+            data = fullData;
         } else {
             error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
         }
@@ -172,6 +176,38 @@ static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNu
         CFRelease(sampleBuffer);
         CFRelease(blockBuffer);
    });
+}
+
+
+
+/**
+ *  Add ADTS header at the beginning of each and every AAC packet.
+ *  This is needed as MediaCodec encoder generates a packet of raw
+ *  AAC data.
+ *
+ *  Note the packetLen must count in the ADTS header itself.
+ *  See: http://wiki.multimedia.cx/index.php?title=ADTS
+ *  Also: http://wiki.multimedia.cx/index.php?title=MPEG-4_Audio#Channel_Configurations
+ **/
+- (NSData*) adtsDataForPacketLength:(NSUInteger)packetLength {
+    int adtsLength = 7;
+    char *packet = malloc(sizeof(char) * adtsLength);
+    // Variables Recycled by addADTStoPacket
+    int profile = 2;  //AAC LC
+    //39=MediaCodecInfo.CodecProfileLevel.AACObjectELD;
+    int freqIdx = 4;  //44.1KHz
+    int chanCfg = 1;  //MPEG-4 Audio Channel Configuration. 1 Channel front-center
+    NSUInteger fullLength = adtsLength + packetLength;
+    // fill in ADTS data
+    packet[0] = (char)0xFF;	// 11111111  	= syncword
+    packet[1] = (char)0xF9;	// 1111 1 00 1  = syncword MPEG-2 Layer CRC
+    packet[2] = (char)(((profile-1)<<6) + (freqIdx<<2) +(chanCfg>>2));
+    packet[3] = (char)(((chanCfg&3)<<6) + (fullLength>>11));
+    packet[4] = (char)((fullLength&0x7FF) >> 3);
+    packet[5] = (char)(((fullLength&7)<<5) + 0x1F);
+    packet[6] = (char)0xFC;
+    NSData *data = [NSData dataWithBytesNoCopy:packet length:adtsLength freeWhenDone:YES];
+    return data;
 }
 
 

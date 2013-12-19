@@ -39,6 +39,8 @@ static CameraServer* theServer;
 @property (nonatomic, strong) NSMutableData *videoSPSandPPS;
 @property (nonatomic, strong) AACEncoder *aacEncoder;
 
+@property (nonatomic, strong) NSFileHandle *debugFileHandle;
+
 @end
 
 
@@ -143,7 +145,6 @@ static CameraServer* theServer;
         [self initializeNALUnitStartCode];
         [self setupHLSWriter];
         _aacEncoder = [[AACEncoder alloc] init];
-        self.aacEncoder.callbackQueue = self.hlsWriter.conversionQueue;
         [self setupAudioCapture];
         [self setupVideoCapture];
         
@@ -238,11 +239,37 @@ static CameraServer* theServer;
             if (encodedData) {
                 NSLog(@"Encoded data (%d): %@", encodedData.length, encodedData.description);
                 //[_hlsWriter processEncodedData:encodedData presentationTimestamp:dPTS streamIndex:1];
+                [self writeDebugFileForData:encodedData pts:dPTS];
             } else {
                 NSLog(@"Error encoding AAC: %@", error);
             }
         }];
     }
+}
+
+- (void) writeDebugFileForData:(NSData*)data pts:(double)pts {
+    if (!_debugFileHandle) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+        NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
+        NSString *folderName = [NSString stringWithFormat:@"%f.aacdebug", time];
+        NSString *debugDirectoryPath = [basePath stringByAppendingPathComponent:folderName];
+        [[NSFileManager defaultManager] createDirectoryAtPath:debugDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+        
+        
+        NSString *fileName = @"test.aac";
+        NSString *outputFilePath = [debugDirectoryPath stringByAppendingPathComponent:fileName];
+        NSURL *fileURL = [NSURL fileURLWithPath:outputFilePath];
+        NSError *error = nil;
+        [[NSFileManager defaultManager] createFileAtPath:outputFilePath contents:nil attributes:nil];
+        _debugFileHandle = [NSFileHandle fileHandleForWritingToURL:fileURL error:&error];
+        if (error) {
+            NSLog(@"Error opening file for writing: %@", error.description);
+        }
+    }
+    
+    [_debugFileHandle writeData:data];
+    [_debugFileHandle synchronizeFile];
 }
 
 - (void) shutdown
