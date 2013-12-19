@@ -33,7 +33,7 @@
         _audioConverter = NULL;
         _pcmBufferSize = 0;
         _pcmBuffer = NULL;
-        _aacBufferSize = 1024;
+        _aacBufferSize = 2048;
         _aacBuffer = malloc(_aacBufferSize * sizeof(char));
         memset(_aacBuffer, 0, _aacBufferSize);
     }
@@ -108,15 +108,15 @@ static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNu
 {
     AACEncoder *encoder = (__bridge AACEncoder *)(inUserData);
     UInt32 requestedPackets = *ioNumberDataPackets;
-    NSLog(@"Number of packets requested: %d", (unsigned int)requestedPackets);
+    //NSLog(@"Number of packets requested: %d", (unsigned int)requestedPackets);
     size_t copiedSamples = [encoder copyPCMSamplesIntoBuffer:ioData];
     if (copiedSamples < requestedPackets) {
-        NSLog(@"PCM buffer isn't full enough!");
+        //NSLog(@"PCM buffer isn't full enough!");
         *ioNumberDataPackets = 0;
         return -1;
     }
     *ioNumberDataPackets = 1;
-    NSLog(@"Copied %zu samples into ioData", copiedSamples);
+    //NSLog(@"Copied %zu samples into ioData", copiedSamples);
     return noErr;
 }
 
@@ -146,7 +146,7 @@ static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNu
         if (status != kCMBlockBufferNoErr) {
             error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
         }
-        NSLog(@"PCM Buffer Size: %zu", _pcmBufferSize);
+        //NSLog(@"PCM Buffer Size: %zu", _pcmBufferSize);
         
         memset(_aacBuffer, 0, _aacBufferSize);
         AudioBufferList outAudioBufferList = {0};
@@ -157,7 +157,7 @@ static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNu
         AudioStreamPacketDescription *outPacketDescription = NULL;
         UInt32 ioOutputDataPacketSize = 1;
         status = AudioConverterFillComplexBuffer(_audioConverter, inInputDataProc, (__bridge void *)(self), &ioOutputDataPacketSize, &outAudioBufferList, outPacketDescription);
-        NSLog(@"ioOutputDataPacketSize: %d", (unsigned int)ioOutputDataPacketSize);
+        //NSLog(@"ioOutputDataPacketSize: %d", (unsigned int)ioOutputDataPacketSize);
         NSData *data = nil;
         if (status == 0) {
             data = [NSData dataWithBytes:outAudioBufferList.mBuffers[0].mData length:outAudioBufferList.mBuffers[0].mDataByteSize];

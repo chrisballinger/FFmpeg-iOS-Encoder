@@ -236,7 +236,7 @@ static CameraServer* theServer;
         double dPTS = (double)(pts.value) / pts.timescale;
         [_aacEncoder encodeSampleBuffer:sampleBuffer completionBlock:^(NSData *encodedData, NSError *error) {
             if (encodedData) {
-                NSLog(@"Encoded data size: %d", encodedData.length);
+                NSLog(@"Encoded data (%d): %@", encodedData.length, encodedData.description);
                 //[_hlsWriter processEncodedData:encodedData presentationTimestamp:dPTS streamIndex:1];
             } else {
                 NSLog(@"Error encoding AAC: %@", error);
