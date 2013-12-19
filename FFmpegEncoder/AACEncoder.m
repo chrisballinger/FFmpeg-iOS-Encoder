@@ -107,21 +107,29 @@
 static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNumberDataPackets, AudioBufferList *ioData, AudioStreamPacketDescription **outDataPacketDescription, void *inUserData)
 {
     AACEncoder *encoder = (__bridge AACEncoder *)(inUserData);
-    //NSLog(@"Number of packets requested: %d", (unsigned int)(*ioNumberDataPackets));
-    [encoder copyPCMSamplesIntoBuffer:ioData];
+    UInt32 requestedPackets = *ioNumberDataPackets;
+    NSLog(@"Number of packets requested: %d", (unsigned int)requestedPackets);
+    size_t copiedSamples = [encoder copyPCMSamplesIntoBuffer:ioData];
+    if (copiedSamples < requestedPackets) {
+        NSLog(@"PCM buffer isn't full enough!");
+        *ioNumberDataPackets = 0;
+        return -1;
+    }
+    *ioNumberDataPackets = 1;
+    NSLog(@"Copied %zu samples into ioData", copiedSamples);
     return noErr;
 }
 
-- (void) copyPCMSamplesIntoBuffer:(AudioBufferList*)ioData {
-    if (!_pcmBufferSize) {
-        NSLog(@"PCM buffer is empty!");
-        return;
+- (size_t) copyPCMSamplesIntoBuffer:(AudioBufferList*)ioData {
+    size_t originalBufferSize = _pcmBufferSize;
+    if (!originalBufferSize) {
+        return 0;
     }
     ioData->mBuffers[0].mData = _pcmBuffer;
     ioData->mBuffers[0].mDataByteSize = _pcmBufferSize;
-    NSLog(@"Copied %zu samples into ioData", _pcmBufferSize);
     _pcmBuffer = NULL;
     _pcmBufferSize = 0;
+    return originalBufferSize;
 }
 
 
@@ -146,8 +154,9 @@ static OSStatus inInputDataProc(AudioConverterRef inAudioConverter, UInt32 *ioNu
         outAudioBufferList.mBuffers[0].mNumberChannels = 1;
         outAudioBufferList.mBuffers[0].mDataByteSize = _aacBufferSize;
         outAudioBufferList.mBuffers[0].mData = _aacBuffer;
+        AudioStreamPacketDescription *outPacketDescription = NULL;
         UInt32 ioOutputDataPacketSize = 1;
-        status = AudioConverterFillComplexBuffer(_audioConverter, inInputDataProc, (__bridge void *)(self), &ioOutputDataPacketSize, &outAudioBufferList, NULL);
+        status = AudioConverterFillComplexBuffer(_audioConverter, inInputDataProc, (__bridge void *)(self), &ioOutputDataPacketSize, &outAudioBufferList, outPacketDescription);
         NSLog(@"ioOutputDataPacketSize: %d", (unsigned int)ioOutputDataPacketSize);
         NSData *data = nil;
         if (status == 0) {
