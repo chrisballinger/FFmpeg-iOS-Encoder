@@ -18,8 +18,7 @@
 
 - (BOOL) prepareForWriting:(NSError**)error;
 
-- (void) processVideoData:(NSData*)data presentationTimestamp:(double)pts;
-- (void) processAudioData:(NSData*)data presentationTimestamp:(double)pts;
+- (void) processEncodedData:(NSData*)data presentationTimestamp:(double)pts streamIndex:(NSUInteger)streamIndex;
 
 - (BOOL) finishWriting:(NSError**)error;
 
