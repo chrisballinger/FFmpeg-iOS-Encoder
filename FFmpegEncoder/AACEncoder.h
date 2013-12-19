@@ -14,7 +14,7 @@
 @property (nonatomic) dispatch_queue_t encoderQueue;
 @property (nonatomic) dispatch_queue_t callbackQueue;
 
-- (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer completionBlock:(void (^)(NSData *encodedData))completionBlock;
+- (void) encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer completionBlock:(void (^)(NSData *encodedData, NSError* error))completionBlock;
 
 
 @end

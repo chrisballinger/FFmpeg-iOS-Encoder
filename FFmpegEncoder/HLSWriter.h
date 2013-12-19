@@ -10,6 +10,7 @@
 
 @interface HLSWriter : NSObject
 
+@property (nonatomic) dispatch_queue_t conversionQueue;
 @property (nonatomic, strong, readonly) NSString *directoryPath;
 
 - (id) initWithDirectoryPath:(NSString*)directoryPath;

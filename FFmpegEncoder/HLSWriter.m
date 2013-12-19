@@ -21,7 +21,6 @@
 @property (nonatomic) AVRational videoTimeBase;
 @property (nonatomic) AVRational audioTimeBase;
 @property (nonatomic) NSUInteger segmentDurationSeconds;
-@property (nonatomic) dispatch_queue_t conversionQueue;
 @end
 
 @implementation HLSWriter

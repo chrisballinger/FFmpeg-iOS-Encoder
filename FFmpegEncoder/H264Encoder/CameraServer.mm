@@ -35,7 +35,6 @@ static CameraServer* theServer;
 }
 
 @property (nonatomic, strong) NSData *naluStartCode;
-@property (nonatomic, strong) NSFileHandle *debugFileHandle;
 @property (nonatomic, strong) HLSWriter *hlsWriter;
 @property (nonatomic, strong) NSMutableData *videoSPSandPPS;
 @property (nonatomic, strong) AACEncoder *aacEncoder;
@@ -68,53 +67,85 @@ static CameraServer* theServer;
     return nil;
 }
 
+- (void) setupHLSWriter {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+    NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
+    NSString *folderName = [NSString stringWithFormat:@"%f.hls", time];
+    NSString *hlsDirectoryPath = [basePath stringByAppendingPathComponent:folderName];
+    [[NSFileManager defaultManager] createDirectoryAtPath:hlsDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+    self.hlsWriter = [[HLSWriter alloc] initWithDirectoryPath:hlsDirectoryPath];
+}
+
+- (void) initializeNALUnitStartCode {
+    NSUInteger naluLength = 4;
+    uint8_t *nalu = (uint8_t*)malloc(naluLength * sizeof(uint8_t));
+    nalu[0] = 0x00;
+    nalu[1] = 0x00;
+    nalu[2] = 0x00;
+    nalu[3] = 0x01;
+    _naluStartCode = [NSData dataWithBytesNoCopy:nalu length:naluLength freeWhenDone:YES];
+}
+
+- (void) setupAudioCapture {
+    // create capture device with video input
+    _session = [[AVCaptureSession alloc] init];
+    
+    /*
+     * Create audio connection
+     */
+    AVCaptureDevice *audioDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
+    NSError *error = nil;
+    AVCaptureDeviceInput *audioInput = [[AVCaptureDeviceInput alloc] initWithDevice:audioDevice error:&error];
+    if (error) {
+        NSLog(@"Error getting audio input device: %@", error.description);
+    }
+    if ([_session canAddInput:audioInput]) {
+        [_session addInput:audioInput];
+    }
+    
+    _audioQueue = dispatch_queue_create("Audio Capture Queue", DISPATCH_QUEUE_SERIAL);
+    _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
+    [_audioOutput setSampleBufferDelegate:self queue:_audioQueue];
+    if ([_session canAddOutput:_audioOutput]) {
+        [_session addOutput:_audioOutput];
+    }
+    _audioConnection = [_audioOutput connectionWithMediaType:AVMediaTypeAudio];
+}
+
+- (void) setupVideoCapture {
+    NSError *error = nil;
+    AVCaptureDevice* videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    AVCaptureDeviceInput* videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoDevice error:&error];
+    if (error) {
+        NSLog(@"Error getting video input device: %@", error.description);
+    }
+    if ([_session canAddInput:videoInput]) {
+        [_session addInput:videoInput];
+    }
+    
+    // create an output for YUV output with self as delegate
+    _videoQueue = dispatch_queue_create("Video Capture Queue", DISPATCH_QUEUE_SERIAL);
+    _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+    [_videoOutput setSampleBufferDelegate:self queue:_videoQueue];
+    NSDictionary *captureSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+    _videoOutput.videoSettings = captureSettings;
+    _videoOutput.alwaysDiscardsLateVideoFrames = YES;
+    
+    [_session addOutput:_videoOutput];
+}
+
 - (void) startup
 {
     if (_session == nil)
     {
         NSLog(@"Starting up server");
-        NSUInteger naluLength = 4;
-        uint8_t *nalu = (uint8_t*)malloc(naluLength * sizeof(uint8_t));
-        nalu[0] = 0x00;
-        nalu[1] = 0x00;
-        nalu[2] = 0x00;
-        nalu[3] = 0x01;
-        _naluStartCode = [NSData dataWithBytesNoCopy:nalu length:naluLength freeWhenDone:YES];
-        
+        [self initializeNALUnitStartCode];
+        [self setupHLSWriter];
         _aacEncoder = [[AACEncoder alloc] init];
-
-        // create capture device with video input
-        _session = [[AVCaptureSession alloc] init];
-        
-        /*
-         * Create audio connection
-         */
-        AVCaptureDeviceInput *audioIn = [[AVCaptureDeviceInput alloc] initWithDevice:[self audioDevice] error:nil];
-        if ([_session canAddInput:audioIn])
-            [_session addInput:audioIn];
-        
-        _audioOutput = [[AVCaptureAudioDataOutput alloc] init];
-        _audioQueue = dispatch_queue_create("Audio Capture Queue", DISPATCH_QUEUE_SERIAL);
-        [_audioOutput setSampleBufferDelegate:self queue:_audioQueue];
-        if ([_session canAddOutput:_audioOutput])
-            [_session addOutput:_audioOutput];
-        _audioConnection = [_audioOutput connectionWithMediaType:AVMediaTypeAudio];
-        
-        
-        AVCaptureDevice* dev = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        AVCaptureDeviceInput* input = [AVCaptureDeviceInput deviceInputWithDevice:dev error:nil];
-        [_session addInput:input];
-        
-        // create an output for YUV output with self as delegate
-        _videoQueue = dispatch_queue_create("Video Capture Queue", DISPATCH_QUEUE_SERIAL);
-        _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
-        [_videoOutput setSampleBufferDelegate:self queue:_videoQueue];
-        NSDictionary* setcapSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithInt:kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange], kCVPixelBufferPixelFormatTypeKey,
-                                        nil];
-        _videoOutput.videoSettings = setcapSettings;
-        _videoOutput.alwaysDiscardsLateVideoFrames = YES;
-        [_session addOutput:_videoOutput];
+        self.aacEncoder.callbackQueue = self.hlsWriter.conversionQueue;
+        [self setupAudioCapture];
+        [self setupVideoCapture];
         
         
         // create an encoder
@@ -150,14 +181,7 @@ static CameraServer* theServer;
         return;
     }
     NSError *error = nil;
-    if (!_hlsWriter) {
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-        NSTimeInterval time = [[NSDate date] timeIntervalSince1970];
-        NSString *folderName = [NSString stringWithFormat:@"%f.hls", time];
-        NSString *hlsDirectoryPath = [basePath stringByAppendingPathComponent:folderName];
-        [[NSFileManager defaultManager] createDirectoryAtPath:hlsDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-        self.hlsWriter = [[HLSWriter alloc] initWithDirectoryPath:hlsDirectoryPath];
+    if (!_videoSPSandPPS) {
         [_hlsWriter setupVideoWithWidth:VIDEO_WIDTH height:VIDEO_HEIGHT];
         [_hlsWriter prepareForWriting:&error];
         if (error) {
@@ -177,14 +201,6 @@ static CameraServer* theServer;
         [_videoSPSandPPS appendData:spsData];
         [_videoSPSandPPS appendData:_naluStartCode];
         [_videoSPSandPPS appendData:ppsData];
-        
-        /*NSMutableData *naluSPS = [[NSMutableData alloc] initWithData:_naluStartCode];
-        [naluSPS appendData:spsData];
-        NSMutableData *naluPPS = [[NSMutableData alloc] initWithData:_naluStartCode];
-        [naluPPS appendData:ppsData];
-         */
-        //[_hlsWriter processVideoData:videoSPSandPPS presentationTimestamp:pts-200];
-        //[_hlsWriter processVideoData:ppsData presentationTimestamp:pts-100];
     }
     
     for (NSData *data in frames) {
@@ -218,8 +234,13 @@ static CameraServer* theServer;
     } else if (connection == _audioConnection) {
         CMTime pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
         double dPTS = (double)(pts.value) / pts.timescale;
-        [_aacEncoder encodeSampleBuffer:sampleBuffer completionBlock:^(NSData *encodedData) {
-            [_hlsWriter processEncodedData:encodedData presentationTimestamp:dPTS streamIndex:1];
+        [_aacEncoder encodeSampleBuffer:sampleBuffer completionBlock:^(NSData *encodedData, NSError *error) {
+            if (encodedData) {
+                NSLog(@"Encoded data size: %d", encodedData.length);
+                //[_hlsWriter processEncodedData:encodedData presentationTimestamp:dPTS streamIndex:1];
+            } else {
+                NSLog(@"Error encoding AAC: %@", error);
+            }
         }];
     }
 }
@@ -239,9 +260,6 @@ static CameraServer* theServer;
     if (_encoder)
     {
         [ _encoder shutdown];
-    }
-    if (_debugFileHandle) {
-        [_debugFileHandle closeFile];
     }
 }
 
