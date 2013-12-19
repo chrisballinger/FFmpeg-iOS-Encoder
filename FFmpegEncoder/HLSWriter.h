@@ -15,7 +15,8 @@
 
 - (id) initWithDirectoryPath:(NSString*)directoryPath;
 
-- (void) setupVideoWithWidth:(int)width height:(int)height;
+- (void) addVideoStreamWithWidth:(int)width height:(int)height;
+- (void) addAudioStreamWithSampleRate:(int)sampleRate;
 
 - (BOOL) prepareForWriting:(NSError**)error;
 

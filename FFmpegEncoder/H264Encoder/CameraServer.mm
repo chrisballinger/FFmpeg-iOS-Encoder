@@ -15,6 +15,7 @@
 
 static const int VIDEO_WIDTH = 1280;
 static const int VIDEO_HEIGHT = 720;
+static const int SAMPLE_RATE = 44100;
 
 static CameraServer* theServer;
 
@@ -90,8 +91,8 @@ static CameraServer* theServer;
 }
 
 - (void) setupAudioCapture {
+    _aacEncoder = [[AACEncoder alloc] init];
     // create capture device with video input
-    _session = [[AVCaptureSession alloc] init];
     
     /*
      * Create audio connection
@@ -113,6 +114,7 @@ static CameraServer* theServer;
         [_session addOutput:_audioOutput];
     }
     _audioConnection = [_audioOutput connectionWithMediaType:AVMediaTypeAudio];
+    [_hlsWriter addAudioStreamWithSampleRate:SAMPLE_RATE];
 }
 
 - (void) setupVideoCapture {
@@ -130,24 +132,33 @@ static CameraServer* theServer;
     _videoQueue = dispatch_queue_create("Video Capture Queue", DISPATCH_QUEUE_SERIAL);
     _videoOutput = [[AVCaptureVideoDataOutput alloc] init];
     [_videoOutput setSampleBufferDelegate:self queue:_videoQueue];
-    NSDictionary *captureSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange)};
+    NSDictionary *captureSettings = @{(NSString*)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange)};
     _videoOutput.videoSettings = captureSettings;
     _videoOutput.alwaysDiscardsLateVideoFrames = YES;
-    
-    [_session addOutput:_videoOutput];
+    if ([_session canAddOutput:_videoOutput]) {
+        [_session addOutput:_videoOutput];
+    }
+    _videoConnection = [_videoOutput connectionWithMediaType:AVMediaTypeVideo];
+
+    [_hlsWriter addVideoStreamWithWidth:VIDEO_WIDTH height:VIDEO_HEIGHT];
+
 }
 
 - (void) startup
 {
     if (_session == nil)
     {
+        _session = [[AVCaptureSession alloc] init];
         NSLog(@"Starting up server");
         [self initializeNALUnitStartCode];
         [self setupHLSWriter];
-        _aacEncoder = [[AACEncoder alloc] init];
         [self setupAudioCapture];
         [self setupVideoCapture];
-        
+        NSError *error = nil;
+        [_hlsWriter prepareForWriting:&error];
+        if (error) {
+            NSLog(@"Error preparing for writing: %@", error);
+        }
         
         // create an encoder
         _encoder = [AVEncoder encoderForHeight:VIDEO_HEIGHT andWidth:VIDEO_WIDTH];
@@ -181,13 +192,7 @@ static CameraServer* theServer;
         NSLog(@"PTS of 0, skipping frame");
         return;
     }
-    NSError *error = nil;
     if (!_videoSPSandPPS) {
-        [_hlsWriter setupVideoWithWidth:VIDEO_WIDTH height:VIDEO_HEIGHT];
-        [_hlsWriter prepareForWriting:&error];
-        if (error) {
-            NSLog(@"Error preparing for writing: %@", error);
-        }
         NSData* config = _encoder.getConfigData;
         
         avcCHeader avcC((const BYTE*)[config bytes], [config length]);
@@ -237,9 +242,9 @@ static CameraServer* theServer;
         double dPTS = (double)(pts.value) / pts.timescale;
         [_aacEncoder encodeSampleBuffer:sampleBuffer completionBlock:^(NSData *encodedData, NSError *error) {
             if (encodedData) {
-                NSLog(@"Encoded data (%d): %@", encodedData.length, encodedData.description);
-                //[_hlsWriter processEncodedData:encodedData presentationTimestamp:dPTS streamIndex:1];
-                [self writeDebugFileForData:encodedData pts:dPTS];
+                //NSLog(@"Encoded data (%d): %@", encodedData.length, encodedData.description);
+                [_hlsWriter processEncodedData:encodedData presentationTimestamp:dPTS streamIndex:1];
+                //[self writeDebugFileForData:encodedData pts:dPTS];
             } else {
                 NSLog(@"Error encoding AAC: %@", error);
             }

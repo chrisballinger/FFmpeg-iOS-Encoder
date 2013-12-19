@@ -44,17 +44,22 @@
 }
 
 - (void) setupOutputFile {
-    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"test.m3u8"];
-    _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"hls"}];
+    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"test.ts"];
+    _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"mpegts"}];
     
     //FFBitstreamFilter *bitstreamFilter = [[FFBitstreamFilter alloc] initWithFilterName:@"h264_mp4toannexb"];
     //[_outputFile addBitstreamFilter:bitstreamFilter];
 }
 
-- (void) setupVideoWithWidth:(int)width height:(int)height {
+- (void) addVideoStreamWithWidth:(int)width height:(int)height {
     _videoStream = [[FFOutputStream alloc] initWithOutputFile:_outputFile outputCodec:@"h264"];
     [_videoStream setupVideoContextWithWidth:width height:height];
     av_opt_set_int(_outputFile.formatContext->priv_data, "hls_time", _segmentDurationSeconds, 0);
+}
+
+- (void) addAudioStreamWithSampleRate:(int)sampleRate {
+    _audioStream = [[FFOutputStream alloc] initWithOutputFile:_outputFile outputCodec:@"aac"];
+    [_audioStream setupAudioContextWithSampleRate:sampleRate];
 }
 
 - (BOOL) prepareForWriting:(NSError *__autoreleasing *)error {
@@ -78,7 +83,7 @@
         
         _packet->data = (uint8_t*)data.bytes;
         _packet->size = (int)data.length;
-        _packet->stream_index = 0;
+        _packet->stream_index = streamIndex;
         uint64_t scaledPTS = av_rescale_q(originalPTS, _videoTimeBase, _outputFile.formatContext->streams[_packet->stream_index]->time_base);
         //NSLog(@"*** Scaled PTS: %lld", scaledPTS);
         
@@ -87,9 +92,9 @@
         NSError *error = nil;
         [_outputFile writePacket:_packet error:&error];
         if (error) {
-            NSLog(@"error writing packet: %@", error.description);
+            NSLog(@"Error writing packet at streamIndex %d and PTS %lld: %@", streamIndex, originalPTS, error.description);
         } else {
-            //NSLog(@"Wrote packet at %lld", originalPTS);
+            NSLog(@"Wrote packet at streamIndex %d and PTS %lld", streamIndex, originalPTS);
         }
     });
 }
