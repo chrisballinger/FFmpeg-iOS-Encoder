@@ -13,6 +13,7 @@
 #import "AVFoundation/AVCaptureInput.h"
 #import "AVFoundation/AVCaptureVideoPreviewLayer.h"
 #import "AVFoundation/AVMediaFormat.h"
+#import "HLSUploader.h"
 
 @interface CameraServer : NSObject
 
@@ -21,5 +22,7 @@
 - (void) shutdown;
 - (NSString*) getURL;
 - (AVCaptureVideoPreviewLayer*) getPreviewLayer;
+
+@property (nonatomic, strong) HLSUploader *hlsUploader;
 
 @end

@@ -39,6 +39,7 @@
         _segmentDurationSeconds = 10;
         [self setupOutputFile];
         _conversionQueue = dispatch_queue_create("HLS Write queue", DISPATCH_QUEUE_SERIAL);
+        _uuid = [[NSUUID UUID] UUIDString];
     }
     return self;
 }

@@ -16,8 +16,23 @@
         _cameraView = [[UIView alloc] init];
         _cameraView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _serverAddress = [[UILabel alloc] init];
+        _shareButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        [_shareButton addTarget:self action:@selector(shareButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+        [_shareButton setTitle:@"Share" forState:UIControlStateNormal];
     }
     return self;
+}
+
+- (void) shareButtonPressed:(id)sender {
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[[CameraServer server].hlsUploader.manifestURL] applicationActivities:nil];
+    
+    UIActivityViewControllerCompletionHandler completionHandler = ^(NSString *activityType, BOOL completed) {
+        NSLog(@"activity: %@", activityType);
+    };
+    
+    activityViewController.completionHandler = completionHandler;
+    
+    [self presentViewController:activityViewController animated:YES completion:nil];
 }
 
 - (void)viewDidLoad
@@ -25,6 +40,7 @@
     [super viewDidLoad];
     [self.view addSubview:_cameraView];
     [self.view addSubview:_serverAddress];
+    [self.view addSubview:_shareButton];
     
     [self startPreview];
 }
@@ -34,6 +50,7 @@
     
     _cameraView.frame = self.view.bounds;
     _serverAddress.frame = CGRectMake(50, 50, 200, 30);
+    _shareButton.frame = CGRectMake(50, 100, 200, 30);
 }
 
 - (void) willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
@@ -61,4 +78,7 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+
+
 @end

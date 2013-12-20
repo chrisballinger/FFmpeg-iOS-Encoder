@@ -12,6 +12,7 @@
 
 @property (strong, nonatomic) UIView *cameraView;
 @property (strong, nonatomic) UILabel *serverAddress;
+@property (nonatomic, strong) UIButton *shareButton;
 
 - (void) startPreview;
 

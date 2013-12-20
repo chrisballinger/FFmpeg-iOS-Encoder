@@ -1,3 +1,9 @@
 [submodule "Submodules/FFmpegWrapper"]
 	path = Submodules/FFmpegWrapper
 	url = git@github.com:OpenWatch/FFmpegWrapper.git
+[submodule "Submodules/CocoaHTTPServer"]
+	path = Submodules/CocoaHTTPServer
+	url = git@github.com:robbiehanson/CocoaHTTPServer.git
+[submodule "Submodules/OWS3Client"]
+	path = Submodules/OWS3Client
+	url = git@github.com:OpenWatch/OWS3Client.git

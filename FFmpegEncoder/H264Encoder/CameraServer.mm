@@ -12,6 +12,8 @@
 #import "NALUnit.h"
 #import "HLSWriter.h"
 #import "AACEncoder.h"
+#import "HTTPServer.h"
+#import "HLSUploader.h"
 
 static const int VIDEO_WIDTH = 1280;
 static const int VIDEO_HEIGHT = 720;
@@ -41,6 +43,8 @@ static CameraServer* theServer;
 @property (nonatomic, strong) AACEncoder *aacEncoder;
 
 @property (nonatomic, strong) NSFileHandle *debugFileHandle;
+
+@property (nonatomic, strong) HTTPServer *httpServer;
 
 @end
 
@@ -159,6 +163,16 @@ static CameraServer* theServer;
         if (error) {
             NSLog(@"Error preparing for writing: %@", error);
         }
+        
+        _httpServer = [[HTTPServer alloc] init];
+        [_httpServer setDocumentRoot:_hlsWriter.directoryPath];
+        _httpServer.port = 9001;
+        [_httpServer start:&error];
+        if (error) {
+            NSLog(@"Error starting http server: %@", error.description);
+        }
+        
+        _hlsUploader = [[HLSUploader alloc] initWithDirectoryPath:_hlsWriter.directoryPath remoteFolderName:_hlsWriter.uuid];
         
         // create an encoder
         _encoder = [AVEncoder encoderForHeight:VIDEO_HEIGHT andWidth:VIDEO_WIDTH];
