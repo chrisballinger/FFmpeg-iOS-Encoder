@@ -24,6 +24,7 @@
 
 - (void) dealloc {
     AudioConverterDispose(_audioConverter);
+    free(_aacBuffer);
 }
 
 - (id) init {
@@ -33,8 +34,8 @@
         _audioConverter = NULL;
         _pcmBufferSize = 0;
         _pcmBuffer = NULL;
-        _aacBufferSize = 2048;
-        _aacBuffer = malloc(_aacBufferSize * sizeof(char));
+        _aacBufferSize = 1024;
+        _aacBuffer = malloc(_aacBufferSize * sizeof(uint8_t));
         memset(_aacBuffer, 0, _aacBufferSize);
     }
     return self;

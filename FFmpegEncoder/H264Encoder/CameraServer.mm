@@ -152,8 +152,8 @@ static CameraServer* theServer;
         NSLog(@"Starting up server");
         [self initializeNALUnitStartCode];
         [self setupHLSWriter];
-        [self setupAudioCapture];
         [self setupVideoCapture];
+        [self setupAudioCapture];
         NSError *error = nil;
         [_hlsWriter prepareForWriting:&error];
         if (error) {

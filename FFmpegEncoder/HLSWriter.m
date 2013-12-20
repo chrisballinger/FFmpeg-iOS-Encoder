@@ -44,8 +44,8 @@
 }
 
 - (void) setupOutputFile {
-    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"test.ts"];
-    _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"mpegts"}];
+    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"index.m3u8"];
+    _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"hls"}];
     
     //FFBitstreamFilter *bitstreamFilter = [[FFBitstreamFilter alloc] initWithFilterName:@"h264_mp4toannexb"];
     //[_outputFile addBitstreamFilter:bitstreamFilter];
@@ -94,7 +94,7 @@
         if (error) {
             NSLog(@"Error writing packet at streamIndex %d and PTS %lld: %@", streamIndex, originalPTS, error.description);
         } else {
-            NSLog(@"Wrote packet at streamIndex %d and PTS %lld", streamIndex, originalPTS);
+            //NSLog(@"Wrote packet of length %d at streamIndex %d and PTS %lld", data.length, streamIndex, originalPTS);
         }
     });
 }

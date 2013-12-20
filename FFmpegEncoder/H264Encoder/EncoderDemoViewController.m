@@ -14,6 +14,7 @@
 - (id) init {
     if (self = [super init]) {
         _cameraView = [[UIView alloc] init];
+        _cameraView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin;
         _serverAddress = [[UILabel alloc] init];
     }
     return self;
