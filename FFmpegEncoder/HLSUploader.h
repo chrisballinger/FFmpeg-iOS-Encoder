@@ -14,7 +14,6 @@
 @property (nonatomic, strong) DirectoryWatcher *directoryWatcher;
 @property (nonatomic, strong) NSString *directoryPath;
 @property (nonatomic, strong) NSMutableDictionary *files;
-@property (nonatomic, strong) NSMutableArray *uploadQueue;
 @property (nonatomic, strong) NSString *manifestPath;
 @property (nonatomic, strong) NSString *remoteFolderName;
 @property (nonatomic) dispatch_queue_t scanningQueue;

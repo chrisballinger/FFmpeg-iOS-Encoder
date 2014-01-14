@@ -14,6 +14,7 @@
 #import "AVFoundation/AVCaptureVideoPreviewLayer.h"
 #import "AVFoundation/AVMediaFormat.h"
 #import "HLSUploader.h"
+@class HLSWriter;
 
 @interface CameraServer : NSObject
 
@@ -24,5 +25,6 @@
 - (AVCaptureVideoPreviewLayer*) getPreviewLayer;
 
 @property (nonatomic, strong) HLSUploader *hlsUploader;
+@property (nonatomic, strong) HLSWriter *hlsWriter;
 
 @end

@@ -9876,7 +9876,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/chrisbal/FFmpeg-iOS-Encoder/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/lib",
+					"$(SRCROOT)/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -9900,7 +9900,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/chrisbal/FFmpeg-iOS-Encoder/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/lib",
+					"$(SRCROOT)/Submodules/FFmpegWrapper/Submodules/FFmpeg-iOS/dependencies/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;

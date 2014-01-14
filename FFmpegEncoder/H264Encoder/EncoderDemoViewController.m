@@ -8,6 +8,7 @@
 
 #import "EncoderDemoViewController.h"
 #import "CameraServer.h"
+#import "HLSWriter.h"
 
 @implementation EncoderDemoViewController
 
@@ -24,7 +25,10 @@
 }
 
 - (void) shareButtonPressed:(id)sender {
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[[CameraServer server].hlsUploader.manifestURL] applicationActivities:nil];
+    NSString *kickflipURLString = [NSString stringWithFormat:@"http://kickflip.io/video.html?v=%@", [CameraServer server].hlsWriter.uuid];
+    NSURL *kickflipURL = [NSURL URLWithString:kickflipURLString];
+    NSURL *manifestURL = [CameraServer server].hlsUploader.manifestURL;
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[kickflipURL, manifestURL] applicationActivities:nil];
     
     UIActivityViewControllerCompletionHandler completionHandler = ^(NSString *activityType, BOOL completed) {
         NSLog(@"activity: %@", activityType);

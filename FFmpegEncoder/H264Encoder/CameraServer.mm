@@ -38,7 +38,6 @@ static CameraServer* theServer;
 }
 
 @property (nonatomic, strong) NSData *naluStartCode;
-@property (nonatomic, strong) HLSWriter *hlsWriter;
 @property (nonatomic, strong) NSMutableData *videoSPSandPPS;
 @property (nonatomic, strong) AACEncoder *aacEncoder;
 

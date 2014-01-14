@@ -45,7 +45,7 @@
 }
 
 - (void) setupOutputFile {
-    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"index.m3u8"];
+    NSString *outputPath = [_directoryPath stringByAppendingPathComponent:@"hls.m3u8"];
     _outputFile = [[FFOutputFile alloc] initWithPath:outputPath options:@{kFFmpegOutputFormatKey: @"hls"}];
     
     //FFBitstreamFilter *bitstreamFilter = [[FFBitstreamFilter alloc] initWithFilterName:@"h264_mp4toannexb"];

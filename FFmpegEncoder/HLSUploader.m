@@ -9,9 +9,19 @@
 #import "HLSUploader.h"
 #import "OWSharedS3Client.h"
 
-#define BUCKET_NAME @"openwatch-livestreamer"
+static NSString * const kBucketName = @"openwatch-livestreamer";
+
+static NSString * const kManifestKey =  @"manifest";
+static NSString * const kFileNameKey = @"fileName";
+
+static NSString * const kUploadStateQueued = @"queued";
+static NSString * const kUploadStateFinished = @"finished";
+static NSString * const kUploadStateUploading = @"uploading";
 
 @interface HLSUploader()
+@property (nonatomic) NSUInteger numbersOffset;
+@property (nonatomic, strong) NSMutableDictionary *queuedSegments;
+@property (nonatomic) NSUInteger nextSegmentIndexToUpload;
 @end
 
 @implementation HLSUploader
@@ -21,38 +31,53 @@
         _directoryPath = [directoryPath copy];
         _directoryWatcher = [DirectoryWatcher watchFolderWithPath:_directoryPath delegate:self];
         _files = [NSMutableDictionary dictionary];
-        _uploadQueue = [NSMutableArray array];
         _remoteFolderName = [remoteFolderName copy];
         _scanningQueue = dispatch_queue_create("Scanning Queue", DISPATCH_QUEUE_SERIAL);
+        _queuedSegments = [NSMutableDictionary dictionaryWithCapacity:5];
+        _numbersOffset = 0;
+        _nextSegmentIndexToUpload = 0;
     }
     return self;
 }
 
-- (void) uploadFilesFromQueue {
-    while (_uploadQueue.count > 0) {
-        NSString *fileName = [_uploadQueue objectAtIndex:0];
-        [_uploadQueue removeObjectAtIndex:0];
-        [_files setObject:@"uploading" forKey:fileName];
-        NSString *filePath = [_directoryPath stringByAppendingPathComponent:fileName];
-        NSString *key = [NSString stringWithFormat:@"%@/%@", _remoteFolderName, fileName];
-        [[OWSharedS3Client sharedClient] postObjectWithFile:filePath bucket:BUCKET_NAME key:key acl:@"public-read" success:^(S3PutObjectResponse *responseObject) {
-            NSLog(@"Uploaded %@", fileName);
-            NSError *error = nil;
-            [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
-            if (error) {
-                NSLog(@"Error removing uploaded file: %@", error.description);
-            }
-            [_files removeObjectForKey:fileName];
-            [self updateManifest];
-        } failure:^(NSError *error) {
-            NSLog(@"Failed to upload %@: %@", fileName, error.description);
-        }];
+- (void) uploadNextSegment {
+    NSLog(@"nextSegmentIndexToUpload: %d, segmentCount: %d, queuedSegments: %d", _nextSegmentIndexToUpload, self.files.count, self.queuedSegments.count);
+    if (_nextSegmentIndexToUpload >= self.files.count) {
+        NSLog(@"index > files");
+        return;
     }
+    NSDictionary *segmentInfo = [_queuedSegments objectForKey:@(_nextSegmentIndexToUpload)];
+    NSString *manifest = [segmentInfo objectForKey:kManifestKey];
+    NSString *fileName = [segmentInfo objectForKey:kFileNameKey];
+    NSString *fileUploadState = [_files objectForKey:fileName];
+    if (![fileUploadState isEqualToString:kUploadStateQueued]) {
+        NSLog(@"Trying to upload file that isn't queued (%@): %@", fileUploadState, segmentInfo);
+        return;
+    }
+    [_files setObject:kUploadStateUploading forKey:fileName];
+    NSString *filePath = [_directoryPath stringByAppendingPathComponent:fileName];
+    NSString *key = [NSString stringWithFormat:@"%@/%@", _remoteFolderName, fileName];
+    [[OWSharedS3Client sharedClient] postObjectWithFile:filePath bucket:kBucketName key:key acl:@"public-read" success:^(S3PutObjectResponse *responseObject) {
+        NSLog(@"Uploaded %@", fileName);
+        [_files setObject:kUploadStateFinished forKey:fileName];
+        NSError *error = nil;
+        [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
+        if (error) {
+            NSLog(@"Error removing uploaded segment: %@", error.description);
+        }
+        [_queuedSegments removeObjectForKey:@(_nextSegmentIndexToUpload)];
+        [self updateManifestWithString:manifest];
+        _nextSegmentIndexToUpload++;
+    } failure:^(NSError *error) {
+        [_files setObject:kUploadStateQueued forKey:fileName];
+        NSLog(@"Failed to upload segment, requeuing %@: %@", fileName, error.description);
+    }];
 }
 
-- (void) updateManifest {
+- (void) updateManifestWithString:(NSString*)manifestString {
+    NSData *data = [manifestString dataUsingEncoding:NSUTF8StringEncoding];
     NSString *key = [NSString stringWithFormat:@"%@/%@", _remoteFolderName, [_manifestPath lastPathComponent]];
-    [[OWSharedS3Client sharedClient] postObjectWithFile:_manifestPath bucket:BUCKET_NAME key:key acl:@"public-read" success:^(S3PutObjectResponse *responseObject) {
+    [[OWSharedS3Client sharedClient] postObjectWithData:data bucket:kBucketName key:key acl:@"public-read" success:^(S3PutObjectResponse *responseObject) {
         NSLog(@"Manifest updated");
     } failure:^(NSError *error) {
         NSLog(@"Error updating manifest: %@", error.description);
@@ -63,28 +88,66 @@
     dispatch_async(_scanningQueue, ^{
         NSError *error = nil;
         NSArray *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:_directoryPath error:&error];
-        NSLog(@"Directory changed, fileCount: %d", files.count);
+        NSLog(@"Directory changed, fileCount: %lu", (unsigned long)files.count);
         if (error) {
             NSLog(@"Error listing directory contents");
         }
-        for (NSString *fileName in files) {
-            if ([fileName rangeOfString:@"m3u8"].location == NSNotFound) {
-                NSString *uploadState = [_files objectForKey:fileName];
-                if (!uploadState) {
-                    [self uploadFilesFromQueue];
-                    NSLog(@"new file detected: %@", fileName);
-                    [_files setObject:@"queued" forKey:fileName];
-                    [_uploadQueue insertObject:fileName atIndex:0];
-                }
-            } else if (!_manifestPath) {
-                _manifestPath = [_directoryPath stringByAppendingPathComponent:fileName];
-            }
+        if (!_manifestPath) {
+            [self initializeManifestPathFromFiles:files];
         }
+        [self detectNewSegmentsFromFiles:files];
     });
 }
 
+- (void) detectNewSegmentsFromFiles:(NSArray*)files {
+    if (!_manifestPath) {
+        NSLog(@"Manifest path not yet available");
+        return;
+    }
+    [files enumerateObjectsUsingBlock:^(NSString *fileName, NSUInteger idx, BOOL *stop) {
+        NSArray *components = [fileName componentsSeparatedByString:@"."];
+        NSString *filePrefix = [components firstObject];
+        NSString *fileExtension = [components lastObject];
+        if ([fileExtension isEqualToString:@"ts"]) {
+            NSString *uploadState = [_files objectForKey:fileName];
+            if (!uploadState) {
+                NSString *manifestSnapshot = [self manifestSnapshot];
+                NSUInteger segmentIndex = [self indexForFilePrefix:filePrefix];
+                NSDictionary *segmentInfo = @{kManifestKey: manifestSnapshot,
+                                                kFileNameKey: fileName};
+                NSLog(@"new file detected: %@", fileName);
+                [_files setObject:kUploadStateQueued forKey:fileName];
+                [_queuedSegments setObject:segmentInfo forKey:@(segmentIndex)];
+                [self uploadNextSegment];
+            }
+        }
+    }];
+}
+
+- (void) initializeManifestPathFromFiles:(NSArray*)files {
+    [files enumerateObjectsUsingBlock:^(NSString *fileName, NSUInteger idx, BOOL *stop) {
+        if ([[fileName pathExtension] isEqualToString:@"m3u8"]) {
+            NSArray *components = [fileName componentsSeparatedByString:@"."];
+            NSString *filePrefix = [components firstObject];
+            _manifestPath = [_directoryPath stringByAppendingPathComponent:fileName];
+            _numbersOffset = filePrefix.length;
+            NSAssert(_numbersOffset > 0, nil);
+            *stop = YES;
+        }
+    }];
+}
+
+- (NSString*) manifestSnapshot {
+    return [NSString stringWithContentsOfFile:_manifestPath encoding:NSUTF8StringEncoding error:nil];
+}
+
+- (NSUInteger) indexForFilePrefix:(NSString*)filePrefix {
+    NSString *numbers = [filePrefix substringFromIndex:_numbersOffset];
+    return [numbers integerValue];
+}
+
 - (NSURL*) manifestURL {
-    NSString *urlString = [NSString stringWithFormat:@"http://%@.s3.amazonaws.com/%@/%@", BUCKET_NAME, _remoteFolderName, [_manifestPath lastPathComponent]];
+    NSString *urlString = [NSString stringWithFormat:@"http://%@.s3.amazonaws.com/%@/%@", kBucketName, _remoteFolderName, [_manifestPath lastPathComponent]];
     return [NSURL URLWithString:urlString];
 }
 
