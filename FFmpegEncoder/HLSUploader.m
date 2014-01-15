@@ -42,8 +42,8 @@ static NSString * const kUploadStateUploading = @"uploading";
 
 - (void) uploadNextSegment {
     NSLog(@"nextSegmentIndexToUpload: %d, segmentCount: %d, queuedSegments: %d", _nextSegmentIndexToUpload, self.files.count, self.queuedSegments.count);
-    if (_nextSegmentIndexToUpload >= self.files.count) {
-        NSLog(@"index > files");
+    if (_nextSegmentIndexToUpload >= self.files.count - 1) {
+        NSLog(@"Cannot upload file currently being recorded at index: %d", _nextSegmentIndexToUpload);
         return;
     }
     NSDictionary *segmentInfo = [_queuedSegments objectForKey:@(_nextSegmentIndexToUpload)];
@@ -58,19 +58,25 @@ static NSString * const kUploadStateUploading = @"uploading";
     NSString *filePath = [_directoryPath stringByAppendingPathComponent:fileName];
     NSString *key = [NSString stringWithFormat:@"%@/%@", _remoteFolderName, fileName];
     [[OWSharedS3Client sharedClient] postObjectWithFile:filePath bucket:kBucketName key:key acl:@"public-read" success:^(S3PutObjectResponse *responseObject) {
-        NSLog(@"Uploaded %@", fileName);
-        [_files setObject:kUploadStateFinished forKey:fileName];
-        NSError *error = nil;
-        [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
-        if (error) {
-            NSLog(@"Error removing uploaded segment: %@", error.description);
-        }
-        [_queuedSegments removeObjectForKey:@(_nextSegmentIndexToUpload)];
-        [self updateManifestWithString:manifest];
-        _nextSegmentIndexToUpload++;
+        dispatch_async(_scanningQueue, ^{
+            NSLog(@"Uploaded %@", fileName);
+            [_files setObject:kUploadStateFinished forKey:fileName];
+            NSError *error = nil;
+            [[NSFileManager defaultManager] removeItemAtPath:filePath error:&error];
+            if (error) {
+                NSLog(@"Error removing uploaded segment: %@", error.description);
+            }
+            [_queuedSegments removeObjectForKey:@(_nextSegmentIndexToUpload)];
+            [self updateManifestWithString:manifest];
+            _nextSegmentIndexToUpload++;
+            [self uploadNextSegment];
+        });
     } failure:^(NSError *error) {
-        [_files setObject:kUploadStateQueued forKey:fileName];
-        NSLog(@"Failed to upload segment, requeuing %@: %@", fileName, error.description);
+        dispatch_async(_scanningQueue, ^{
+            [_files setObject:kUploadStateQueued forKey:fileName];
+            NSLog(@"Failed to upload segment, requeuing %@: %@", fileName, error.description);
+            [self uploadNextSegment];
+        });
     }];
 }
 
