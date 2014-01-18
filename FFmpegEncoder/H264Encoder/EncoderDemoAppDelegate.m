@@ -20,7 +20,7 @@
     // Override point for customization after application launch.
     self.window.rootViewController = [[EncoderDemoViewController alloc] init];
     
-    [[CameraServer server] startup];
+    //[[CameraServer server] startup];
 
     [self.window makeKeyAndVisible];
     

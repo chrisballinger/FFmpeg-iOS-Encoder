@@ -7,3 +7,9 @@
 [submodule "Submodules/OWS3Client"]
 	path = Submodules/OWS3Client
 	url = git@github.com:OpenWatch/OWS3Client.git
+[submodule "Submodules/AFNetworking"]
+	path = Submodules/AFNetworking
+	url = git@github.com:AFNetworking/AFNetworking.git
+[submodule "Submodules/AFOAuth2Client"]
+	path = Submodules/AFOAuth2Client
+	url = git@github.com:AFNetworking/AFOAuth2Client.git

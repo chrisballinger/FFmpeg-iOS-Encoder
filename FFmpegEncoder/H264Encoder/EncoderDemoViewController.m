@@ -9,6 +9,8 @@
 #import "EncoderDemoViewController.h"
 #import "CameraServer.h"
 #import "HLSWriter.h"
+#import "OWSecrets.h"
+#import "KFAPIClient.h"
 
 @implementation EncoderDemoViewController
 
@@ -55,7 +57,17 @@
     _cameraView.frame = self.view.bounds;
     _serverAddress.frame = CGRectMake(50, 50, 200, 30);
     _shareButton.frame = CGRectMake(50, 100, 200, 30);
+    
+    [self testOAuthStuff];
 }
+
+- (void) testOAuthStuff {
+    [[KFAPIClient sharedClient] requestRecordingEndpoint:^(KFEndpointResponse *endpointResponse, NSError *error) {
+        
+    }];
+}
+
+
 
 - (void) willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
