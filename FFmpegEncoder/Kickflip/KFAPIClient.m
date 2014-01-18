@@ -27,6 +27,7 @@
     if (self = [super initWithBaseURL:url]) {
         [self registerHTTPOperationClass:[AFJSONRequestOperation class]];
         [self checkOAuthCredentials];
+        [self setDefaultHeader:@"Accept" value:@"application/json"];
     }
     return self;
 }
@@ -67,6 +68,10 @@
 
 - (void) requestRecordingEndpoint:(void (^)(KFEndpointResponse *, NSError *))endpointCallback {
     [self postPath:@"/api/new/user/" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        if (responseObject && [responseObject isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *responseDictionary = (NSDictionary*)responseObject;
+            NSLog(@"response: %@", responseDictionary);
+        }
         KFEndpointResponse *response = [[KFEndpointResponse alloc] init];
         if (endpointCallback) {
             endpointCallback(response, nil);
