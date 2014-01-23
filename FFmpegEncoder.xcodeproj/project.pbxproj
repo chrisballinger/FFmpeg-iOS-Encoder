@@ -19,6 +19,7 @@
 		D926E0781889FD7300181438 /* AFURLConnectionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = D926E06D1889FD7300181438 /* AFURLConnectionOperation.m */; };
 		D926E0791889FD7300181438 /* AFXMLRequestOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = D926E06F1889FD7300181438 /* AFXMLRequestOperation.m */; };
 		D926E07A1889FD7300181438 /* UIImageView+AFNetworking.m in Sources */ = {isa = PBXBuildFile; fileRef = D926E0711889FD7300181438 /* UIImageView+AFNetworking.m */; };
+		D960A68B18909C3100CB3F2F /* KFUser.m in Sources */ = {isa = PBXBuildFile; fileRef = D960A68A18909C3100CB3F2F /* KFUser.m */; };
 		D9737AB0185F93A10028C732 /* AVEncoder.mm in Sources */ = {isa = PBXBuildFile; fileRef = D9737A9D185F939F0028C732 /* AVEncoder.mm */; };
 		D9737AB1185F93A10028C732 /* CameraServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = D9737A9F185F93A00028C732 /* CameraServer.mm */; };
 		D9737AB2185F93A10028C732 /* EncoderDemoAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = D9737AA1185F93A00028C732 /* EncoderDemoAppDelegate.m */; };
@@ -93,6 +94,9 @@
 		D9CBF8D6185E821A0012A1DD /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CBF8D5185E821A0012A1DD /* libz.dylib */; };
 		D9CBF8D8185E82230012A1DD /* libbz2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CBF8D7185E82230012A1DD /* libbz2.dylib */; };
 		D9CBF8DA185E82290012A1DD /* libiconv.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D9CBF8D9185E82290012A1DD /* libiconv.dylib */; };
+		D9E4F5DC1890672F003802D5 /* SSKeychain.strings in Resources */ = {isa = PBXBuildFile; fileRef = D9E4F5D61890672F003802D5 /* SSKeychain.strings */; };
+		D9E4F5DD1890672F003802D5 /* SSKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E4F5D91890672F003802D5 /* SSKeychain.m */; };
+		D9E4F5DE1890672F003802D5 /* SSKeychainQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E4F5DB1890672F003802D5 /* SSKeychainQuery.m */; };
 		D9E59461188879A7000815B0 /* Kickflip.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E5945F188879A7000815B0 /* Kickflip.m */; };
 		D9E5946418887C4D000815B0 /* KFRecordingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E5946318887C4D000815B0 /* KFRecordingViewController.m */; };
 		D9E5946A18887CDD000815B0 /* KFRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = D9E5946918887CDD000815B0 /* KFRecorder.m */; };
@@ -171,6 +175,13 @@
 		D926E06F1889FD7300181438 /* AFXMLRequestOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFXMLRequestOperation.m; sourceTree = "<group>"; };
 		D926E0701889FD7300181438 /* UIImageView+AFNetworking.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImageView+AFNetworking.h"; sourceTree = "<group>"; };
 		D926E0711889FD7300181438 /* UIImageView+AFNetworking.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImageView+AFNetworking.m"; sourceTree = "<group>"; };
+		D960A67F189097A400CB3F2F /* DDLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DDLog.h; path = Submodules/CocoaLumberjack/Lumberjack/DDLog.h; sourceTree = "<group>"; };
+		D960A680189097A400CB3F2F /* DDLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DDLog.m; path = Submodules/CocoaLumberjack/Lumberjack/DDLog.m; sourceTree = "<group>"; };
+		D960A681189097A400CB3F2F /* DDTTYLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DDTTYLogger.h; path = Submodules/CocoaLumberjack/Lumberjack/DDTTYLogger.h; sourceTree = "<group>"; };
+		D960A682189097A400CB3F2F /* DDTTYLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DDTTYLogger.m; path = Submodules/CocoaLumberjack/Lumberjack/DDTTYLogger.m; sourceTree = "<group>"; };
+		D960A6881890999200CB3F2F /* KFLogging.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = KFLogging.h; path = FFmpegEncoder/Kickflip/KFLogging.h; sourceTree = "<group>"; };
+		D960A68918909C3100CB3F2F /* KFUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KFUser.h; path = FFmpegEncoder/Kickflip/KFUser.h; sourceTree = "<group>"; };
+		D960A68A18909C3100CB3F2F /* KFUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = KFUser.m; path = FFmpegEncoder/Kickflip/KFUser.m; sourceTree = "<group>"; };
 		D9737A9C185F939F0028C732 /* AVEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AVEncoder.h; path = FFmpegEncoder/H264Encoder/AVEncoder.h; sourceTree = "<group>"; };
 		D9737A9D185F939F0028C732 /* AVEncoder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AVEncoder.mm; path = FFmpegEncoder/H264Encoder/AVEncoder.mm; sourceTree = "<group>"; };
 		D9737A9E185F939F0028C732 /* CameraServer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CameraServer.h; path = FFmpegEncoder/H264Encoder/CameraServer.h; sourceTree = "<group>"; };
@@ -4473,6 +4484,11 @@
 		D9CBF8D5185E821A0012A1DD /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		D9CBF8D7185E82230012A1DD /* libbz2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libbz2.dylib; path = usr/lib/libbz2.dylib; sourceTree = SDKROOT; };
 		D9CBF8D9185E82290012A1DD /* libiconv.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libiconv.dylib; path = usr/lib/libiconv.dylib; sourceTree = SDKROOT; };
+		D9E4F5D71890672F003802D5 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/SSKeychain.strings; sourceTree = "<group>"; };
+		D9E4F5D81890672F003802D5 /* SSKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSKeychain.h; sourceTree = "<group>"; };
+		D9E4F5D91890672F003802D5 /* SSKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSKeychain.m; sourceTree = "<group>"; };
+		D9E4F5DA1890672F003802D5 /* SSKeychainQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSKeychainQuery.h; sourceTree = "<group>"; };
+		D9E4F5DB1890672F003802D5 /* SSKeychainQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSKeychainQuery.m; sourceTree = "<group>"; };
 		D9E5945E188879A7000815B0 /* Kickflip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Kickflip.h; path = FFmpegEncoder/Kickflip/Kickflip.h; sourceTree = "<group>"; };
 		D9E5945F188879A7000815B0 /* Kickflip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Kickflip.m; path = FFmpegEncoder/Kickflip/Kickflip.m; sourceTree = "<group>"; };
 		D9E5946218887C4D000815B0 /* KFRecordingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = KFRecordingViewController.h; path = FFmpegEncoder/Kickflip/KFRecordingViewController.h; sourceTree = "<group>"; };
@@ -4570,6 +4586,18 @@
 			);
 			name = AFNetworking;
 			path = Submodules/AFNetworking/AFNetworking;
+			sourceTree = "<group>";
+		};
+		D960A687189097A700CB3F2F /* CocoaLumberjack */ = {
+			isa = PBXGroup;
+			children = (
+				D960A6881890999200CB3F2F /* KFLogging.h */,
+				D960A67F189097A400CB3F2F /* DDLog.h */,
+				D960A680189097A400CB3F2F /* DDLog.m */,
+				D960A681189097A400CB3F2F /* DDTTYLogger.h */,
+				D960A682189097A400CB3F2F /* DDTTYLogger.m */,
+			);
+			name = CocoaLumberjack;
 			sourceTree = "<group>";
 		};
 		D9737ABA185F93A50028C732 /* H264Encoder */ = {
@@ -4783,6 +4811,8 @@
 		D9CBE7C9185E80530012A1DD = {
 			isa = PBXGroup;
 			children = (
+				D960A687189097A700CB3F2F /* CocoaLumberjack */,
+				D9E4F5D51890672F003802D5 /* SSKeychain */,
 				D926E05E1889FD7300181438 /* AFNetworking */,
 				D926E0581889FD6800181438 /* AFOAuth2Client */,
 				D9E59458188877C3000815B0 /* Kickflip */,
@@ -9662,6 +9692,19 @@
 			path = Submodules/FFmpegWrapper/FFmpegWrapper;
 			sourceTree = "<group>";
 		};
+		D9E4F5D51890672F003802D5 /* SSKeychain */ = {
+			isa = PBXGroup;
+			children = (
+				D9E4F5D61890672F003802D5 /* SSKeychain.strings */,
+				D9E4F5D81890672F003802D5 /* SSKeychain.h */,
+				D9E4F5D91890672F003802D5 /* SSKeychain.m */,
+				D9E4F5DA1890672F003802D5 /* SSKeychainQuery.h */,
+				D9E4F5DB1890672F003802D5 /* SSKeychainQuery.m */,
+			);
+			name = SSKeychain;
+			path = Submodules/SSKeychain/SSKeychain;
+			sourceTree = "<group>";
+		};
 		D9E59458188877C3000815B0 /* Kickflip */ = {
 			isa = PBXGroup;
 			children = (
@@ -9705,6 +9748,8 @@
 				D9E5947618888281000815B0 /* KFEndpointResponse.m */,
 				D9E594721888815C000815B0 /* KFAPIClient.h */,
 				D9E594731888815C000815B0 /* KFAPIClient.m */,
+				D960A68918909C3100CB3F2F /* KFUser.h */,
+				D960A68A18909C3100CB3F2F /* KFUser.m */,
 			);
 			name = API;
 			sourceTree = "<group>";
@@ -9816,6 +9861,7 @@
 			files = (
 				D9B60C95186419180036EC44 /* About.txt in Resources */,
 				D9CBE7E0185E80530012A1DD /* InfoPlist.strings in Resources */,
+				D9E4F5DC1890672F003802D5 /* SSKeychain.strings in Resources */,
 				D9B60C97186419180036EC44 /* About.txt in Resources */,
 				D9CBE7E8185E80530012A1DD /* Images.xcassets in Resources */,
 				D9B60C9F186419180036EC44 /* README.txt in Resources */,
@@ -9853,6 +9899,7 @@
 				D9B60C86186419180036EC44 /* DDRange.m in Sources */,
 				D9CBF8D2185E81DC0012A1DD /* FFOutputStream.m in Sources */,
 				D926E0751889FD7300181438 /* AFJSONRequestOperation.m in Sources */,
+				D9E4F5DE1890672F003802D5 /* SSKeychainQuery.m in Sources */,
 				D9CBE7E2185E80530012A1DD /* main.m in Sources */,
 				D926E0741889FD7300181438 /* AFImageRequestOperation.m in Sources */,
 				D91E37D118623E18007B4047 /* AACEncoder.m in Sources */,
@@ -9868,6 +9915,7 @@
 				D926E0791889FD7300181438 /* AFXMLRequestOperation.m in Sources */,
 				D9737AB4185F93A10028C732 /* MP4Atom.m in Sources */,
 				D9737AB1185F93A10028C732 /* CameraServer.mm in Sources */,
+				D9E4F5DD1890672F003802D5 /* SSKeychain.m in Sources */,
 				D9CBF8CD185E81DC0012A1DD /* FFFile.m in Sources */,
 				D9737AB3185F93A10028C732 /* EncoderDemoViewController.m in Sources */,
 				D9E5946418887C4D000815B0 /* KFRecordingViewController.m in Sources */,
@@ -9882,6 +9930,7 @@
 				D926E05B1889FD6800181438 /* AFOAuth2Client.m in Sources */,
 				D9E5948418888C9F000815B0 /* KFS3Uploader.m in Sources */,
 				D91E37CE18623B26007B4047 /* DirectoryWatcher.m in Sources */,
+				D960A68B18909C3100CB3F2F /* KFUser.m in Sources */,
 				D926E07A1889FD7300181438 /* UIImageView+AFNetworking.m in Sources */,
 				D9B60C8E186419180036EC44 /* HTTPAsyncFileResponse.m in Sources */,
 				D9B60CA918641EFA0036EC44 /* OWS3Client.m in Sources */,
@@ -9956,6 +10005,14 @@
 				D9CBE7F8185E80530012A1DD /* en */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		D9E4F5D61890672F003802D5 /* SSKeychain.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				D9E4F5D71890672F003802D5 /* en */,
+			);
+			name = SSKeychain.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

@@ -13,3 +13,9 @@
 [submodule "Submodules/AFOAuth2Client"]
 	path = Submodules/AFOAuth2Client
 	url = git@github.com:AFNetworking/AFOAuth2Client.git
+[submodule "Submodules/SSKeychain"]
+	path = Submodules/SSKeychain
+	url = git@github.com:soffes/sskeychain.git
+[submodule "Submodules/CocoaLumberjack"]
+	path = Submodules/CocoaLumberjack
+	url = git@github.com:CocoaLumberjack/CocoaLumberjack.git

@@ -11,6 +11,7 @@
 #import "HLSWriter.h"
 #import "OWSecrets.h"
 #import "KFAPIClient.h"
+#import "KFUser.h"
 
 @implementation EncoderDemoViewController
 
@@ -63,7 +64,11 @@
 
 - (void) testOAuthStuff {
     [[KFAPIClient sharedClient] requestRecordingEndpoint:^(KFEndpointResponse *endpointResponse, NSError *error) {
-        
+        if (!error) {
+            NSLog(@"broadcast url: %@", endpointResponse.broadcastURL);
+        } else {
+            NSLog(@"error getting endpoint: %@", error);
+        }
     }];
 }
 

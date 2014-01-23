@@ -8,11 +8,10 @@
 
 #import "KFEndpointResponse.h"
 
+@class KFUser;
+
 @interface KFS3EndpointResponse : KFEndpointResponse
 
-@property (nonatomic, strong, readonly) NSString *awsSecretKey;
-@property (nonatomic, strong, readonly) NSString *awsAccessKey;
-@property (nonatomic, strong, readonly) NSString *bucket;
-@property (nonatomic, strong, readonly) NSString *key;
++ (instancetype) endpointResponseForUser:(KFUser*)user;
 
 @end

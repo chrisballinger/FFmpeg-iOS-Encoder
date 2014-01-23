@@ -9,7 +9,11 @@
 #import "KFAPIClient.h"
 #import "OWSecrets.h"
 #import "AFOAuth2Client.h"
+#import "KFLogging.h"
+#import "KFUser.h"
+#import "KFS3EndpointResponse.h"
 
+static NSString* const kKFAPIClientErrorDomain = @"kKFAPIClientErrorDomain";
 
 @implementation KFAPIClient
 
@@ -26,60 +30,91 @@
     NSURL *url = [NSURL URLWithString:KICKFLIP_API_BASE_URL];
     if (self = [super initWithBaseURL:url]) {
         [self registerHTTPOperationClass:[AFJSONRequestOperation class]];
-        [self checkOAuthCredentials];
         [self setDefaultHeader:@"Accept" value:@"application/json"];
+        
+        [self checkOAuthCredentialsWithCallback:^(BOOL success, NSError *error) {
+            if (success) {
+                [self requestRecordingEndpoint:nil];
+            }
+        }];
     }
     return self;
 }
 
-- (void) checkOAuthCredentials {
+- (void) checkOAuthCredentialsWithCallback:(void (^)(BOOL success, NSError * error))callback {
     NSURL *url = [NSURL URLWithString:KICKFLIP_API_BASE_URL];
     AFOAuth2Client *oauthClient = [AFOAuth2Client clientWithBaseURL:url clientID:KICKFLIP_PRODUCTION_API_ID secret:KICKFLIP_PRODUCTION_API_SECRET];
     
     AFOAuthCredential *credential = [AFOAuthCredential retrieveCredentialWithIdentifier:oauthClient.serviceProviderIdentifier];
-    
-    void (^callbackBlock)(KFEndpointResponse *endpointResponse, NSError *error) = ^(KFEndpointResponse *endpointResponse, NSError *error){
-        if (error) {
-            NSLog(@"Error: %@", error);
-        } else {
-            NSLog(@"endpoint: %@", endpointResponse);
-        }
-    };
-    
-    if (!credential || credential.isExpired) {
-        [oauthClient authenticateUsingOAuthWithPath:@"/o/token/" parameters:@{@"grant_type": kAFOAuthClientCredentialsGrantType} success:^(AFOAuthCredential *credential) {
-            NSLog(@"I have a token! %@", credential.accessToken);
-            [AFOAuthCredential storeCredential:credential withIdentifier:oauthClient.serviceProviderIdentifier];
-            [self setAuthorizationHeaderWithCredential:credential];
-            [self requestRecordingEndpoint:callbackBlock];
-        } failure:^(NSError *error) {
-            NSLog(@"Error: %@", error);
-        }];
-    } else {
+    if (credential && !credential.isExpired) {
         [self setAuthorizationHeaderWithCredential:credential];
-        [self requestRecordingEndpoint:callbackBlock];
+        if (callback) {
+            callback(YES, nil);
+        }
+        return;
     }
+
+    [oauthClient authenticateUsingOAuthWithPath:@"/o/token/" parameters:@{@"grant_type": kAFOAuthClientCredentialsGrantType} success:^(AFOAuthCredential *credential) {
+        NSLog(@"I have new token! %@", credential.accessToken);
+        [AFOAuthCredential storeCredential:credential withIdentifier:oauthClient.serviceProviderIdentifier];
+        [self setAuthorizationHeaderWithCredential:credential];
+        if (callback) {
+            callback(YES, nil);
+        }
+    } failure:^(NSError *error) {
+        if (callback) {
+            callback(NO, error);
+        }
+    }];
 }
 
 - (void) setAuthorizationHeaderWithCredential:(AFOAuthCredential*)credential {
     [self setDefaultHeader:@"Authorization" value:[NSString stringWithFormat:@"Bearer %@", credential.accessToken]];
 }
 
-
 - (void) requestRecordingEndpoint:(void (^)(KFEndpointResponse *, NSError *))endpointCallback {
-    [self postPath:@"/api/new/user/" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
-        if (responseObject && [responseObject isKindOfClass:[NSDictionary class]]) {
-            NSDictionary *responseDictionary = (NSDictionary*)responseObject;
-            NSLog(@"response: %@", responseDictionary);
+    [self checkOAuthCredentialsWithCallback:^(BOOL success, NSError *error) {
+        if (!success) {
+            DDLogError(@"Error fetching OAuth credentials: %@", error);
+            if (endpointCallback) {
+                endpointCallback(nil, error);
+            }
+            return;
         }
-        KFEndpointResponse *response = [[KFEndpointResponse alloc] init];
-        if (endpointCallback) {
-            endpointCallback(response, nil);
+        KFUser *activeUser = [KFUser activeUser];
+        if (activeUser) { // this will change when we support RTMP
+            KFS3EndpointResponse *endpointResponse = [KFS3EndpointResponse endpointResponseForUser:activeUser];
+            if (endpointCallback) {
+                endpointCallback(endpointResponse, nil);
+            }
+            return;
         }
-    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
-        if (error && endpointCallback) {
-            endpointCallback(nil, error);
-        }
+        [self postPath:@"/api/new/user/" parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            if (responseObject && [responseObject isKindOfClass:[NSDictionary class]]) {
+                NSDictionary *responseDictionary = (NSDictionary*)responseObject;
+                KFUser *activeUser = [KFUser activeUserWithDictionary:responseDictionary];
+                if (activeUser) {
+                    KFS3EndpointResponse *endpointResponse = [KFS3EndpointResponse endpointResponseForUser:activeUser];
+                    if (endpointCallback) {
+                        endpointCallback(endpointResponse, nil);
+                    }
+                    return;
+                } else {
+                    if (endpointCallback) {
+                        endpointCallback(nil, [NSError errorWithDomain:kKFAPIClientErrorDomain code:100 userInfo:@{NSLocalizedDescriptionKey: @"User response error", @"operation": operation}]);
+                    }
+                }
+            } else {
+                if (endpointCallback) {
+                    endpointCallback(nil, [NSError errorWithDomain:kKFAPIClientErrorDomain code:100 userInfo:@{NSLocalizedDescriptionKey: @"User response error", @"operation": operation}]);
+                }
+            }
+            
+        } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+            if (error && endpointCallback) {
+                endpointCallback(nil, error);
+            }
+        }];
     }];
 }
 

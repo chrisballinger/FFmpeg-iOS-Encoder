@@ -8,12 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
+@class KFUser;
+
 @interface KFEndpointResponse : NSObject
 
+@property (nonatomic, strong, readonly) KFUser *user;
+@property (nonatomic, strong, readonly) NSString *uuid;
 @property (nonatomic, strong, readonly) NSURL *broadcastURL;
-
-- (instancetype) initWithResponseInfo:(NSDictionary*)responseInfo;
-
-+ (KFEndpointResponse*) endpointWithResponseInfo:(NSDictionary*)responseInfo;
 
 @end
