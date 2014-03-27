@@ -1,11 +1,3 @@
 # FFmpeg-iOS-Encoder
 
-Experiments trying to get the iOS hardware H.264 encoder feed data into FFmpeg's libavformat muxer.
-
-## License
-
-MIT
-
-Dependencies:
-LGPL 2.1+
-GDCL
+Development on this project has been moved to [kickflip-ios-sdk](https://github.com/Kickflip/kickflip-ios-sdk). [Kickflip](http://kickflip.io) has open source live broadcasting SDKs for [iOS](https://github.com/Kickflip/kickflip-ios-sdk) and [Android](https://github.com/kickflip/kickflip-android-sdk). Check it out!
